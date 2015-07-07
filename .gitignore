@@ -1,3 +1,7 @@
 *.blend1
 *.swp
+*.pyc
 __pycache__
+/docs/venv
+/docs/html
+/docs/src
