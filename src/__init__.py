@@ -8,6 +8,7 @@ from bge import (
         )
 
 from . import (
+        events,
         io,
         sound,
         debug,
@@ -17,11 +18,14 @@ class Temple:
     __slots__ = (
             "_is_debug",
             "debug",
+            "events",
             "io",
             "sound",
             )
 
     def __init__(self):
+        self.events = events.Base(self)
+
         self._debug()
         self._setup()
 
