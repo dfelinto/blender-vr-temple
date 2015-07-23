@@ -11,6 +11,7 @@ from . import base
 class Base(base.Base):
     __slots__ = (
             "_flashlight_power",
+            "_sonar_power",
             )
 
     def __init__(self, parent):
@@ -18,6 +19,9 @@ class Base(base.Base):
 
         # Flashlight
         self._flashlight_power = False
+
+        # Sonar
+        self._sonar_power = False
 
     def loop(self):
         pass
@@ -28,3 +32,10 @@ class Base(base.Base):
         """
         self._flashlight_power = not self._flashlight_power
         self.setFlashlightMode(power = self._flashlight_power)
+
+    def sonarButton(self):
+        """
+        Sonar button was pressed
+        """
+        self._sonar_power = not self._sonar_power
+        self.setSonarMode(power = self._sonar_power)

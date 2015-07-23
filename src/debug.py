@@ -14,6 +14,7 @@ from bge import (
 
 LEFT_EYE = render.LEFT_EYE
 ONEKEY = events.ONEKEY
+TWOKEY = events.TWOKEY
 
 from . import base
 
@@ -49,5 +50,7 @@ class Base(base.Base):
         if ONEKEY in active_keys and ONEKEY not in self._keys:
             self._parent.io.flashlightButton()
 
+        if TWOKEY in active_keys and TWOKEY not in self._keys:
+            self._parent.io.sonarButton()
 
         self._keys = set(active_keys)
