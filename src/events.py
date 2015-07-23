@@ -24,6 +24,7 @@ class Base(base.Base):
         """
         """
         print("setFlashlightMode({0})".format(power))
+        logic.sendMessage("light")
 
     def setSonarMode(power=True):
         """

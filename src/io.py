@@ -28,7 +28,7 @@ class Base(base.Base):
 
     def flashlightButton(self):
         """
-        Flashlight was de/actived
+        Flashlight button was pressed
         """
         self._flashlight_power = not self._flashlight_power
         self.setFlashlightMode(power = self._flashlight_power)
