@@ -39,3 +39,9 @@ class Base(base.Base):
         """
         self._sonar_power = not self._sonar_power
         self.setSonarMode(power = self._sonar_power)
+
+    def rockButton(self):
+        """
+        Rock button was pressed
+        """
+        self.throwRock()

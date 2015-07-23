@@ -31,3 +31,9 @@ class Base(base.Base):
         print("setSonarMode({0})".format(power))
         logic.sendMessage("sonar")
         TODO
+
+    def throwRock():
+        """
+        """
+        print("throwRock()")
+        logic.sendMessage("rock")
