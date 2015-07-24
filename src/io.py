@@ -6,7 +6,10 @@ Takes the three different inputs, process the data and call the corresponding ev
 It also handles head transformation/navigation.
 """
 
+from mathutils import Vector
 from . import base
+
+TODO = True
 
 class Base(base.Base):
     __slots__ = (
@@ -23,8 +26,23 @@ class Base(base.Base):
         # Sonar
         self._sonar_power = False
 
-    def loop(self):
-        pass
+    @property
+    def is_sonar(self):
+        return self._sonar_power
+
+    @property
+    def is_flashlight(self):
+        return self._flashlight_power
+
+    @property
+    def head_direction(self):
+        TODO
+        return Vector()
+
+    @property
+    def head_position(self):
+        TODO
+        return Vector()
 
     def flashlightButton(self):
         """
@@ -45,12 +63,6 @@ class Base(base.Base):
         """
         self._sonar_power = not self._sonar_power
         self.setSonarMode(power = self._sonar_power)
-
-        """
-        * screen get blurry
-        * volume gets higher
-        * if pointing to a bat for long, bat goes away
-        """
 
     def rockButton(self):
         """
