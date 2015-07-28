@@ -35,6 +35,6 @@ class Pipe():
         functions = events.__class__.__dict__
 
         if self._function in functions:
-            return functions[self._function](**kwargs)
+            return functions[self._function](events, *args, **kwargs)
         else:
             raise AttributeError("Event \"{0}\" not found".format(self._function))

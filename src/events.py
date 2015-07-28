@@ -17,13 +17,13 @@ class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
 
-    def setFlashlightMode(power=True):
+    def setFlashlightMode(self, power=True):
         """
         """
         print("setFlashlightMode({0})".format(power))
         logic.sendMessage("light")
 
-    def setSonarMode(power=True):
+    def setSonarMode(self, power=True):
         """
         """
         print("setSonarMode({0})".format(power))
@@ -47,7 +47,7 @@ class Base(base.Base):
             * screen back to normal
         """
 
-    def throwRock():
+    def throwRock(self):
         """
         """
         print("throwRock()")
