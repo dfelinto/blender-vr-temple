@@ -19,12 +19,14 @@ class Base(base.Base):
 
     def setFlashlightMode(self, power=True):
         """
+        Activate or Deactivate the flashlight
         """
         print("setFlashlightMode({0})".format(power))
         logic.sendMessage("light")
 
     def setSonarMode(self, power=True):
         """
+        Activate or Deactivate the sonar
         """
         print("setSonarMode({0})".format(power))
         logic.sendMessage("sonar")
@@ -49,6 +51,7 @@ class Base(base.Base):
 
     def throwRock(self):
         """
+        Throw a rock (to hit a pendulum)
         """
         print("throwRock()")
         logic.sendMessage("rock")
