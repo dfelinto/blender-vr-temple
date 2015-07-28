@@ -8,18 +8,16 @@ Control the enemies behaviour (bats, ghosts, pendulum)
 """
 Short Term Task list:
 
-* Initialize the Bat/Ghost objects
-  (I may want a flat list of them btw, instead of a Bats() class)
-
-* call the addObject actuator for every single of those objects, to keep tag of them
-(instead of let this happening automatically)
-
 * check for their states, and initialize their sound if they are in a valid state
 
 * check for hitting, if position last long, triggers object death
 
 * remember to store a unique property in each of the spawned objects to make them unique for messages
 """
+
+from bge import (
+        logic,
+        )
 
 from . import base
 
@@ -35,11 +33,11 @@ class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
 
-        self._bats = Bats()
-        self._ghosts = Ghosts()
-        self._pendulum = Pendulums()
+        self._bats = []
+        self._ghosts = []
+        self._pendulums = []
 
-        self._initalizeEnemies()
+        self._initializeEnemies()
 
     def _initializeEnemies(self):
         """
@@ -47,8 +45,25 @@ class Base(base.Base):
         store unique property in each to use the messenger system
         populate the self._* lists
         """
-        TODO
+        scene = logic.getCurrentScene()
+        objects = scene.objects
 
+        enemies = {'bat', 'ghost', 'pendulum'}
+
+        for obj in objects:
+            enemy = obj.get('enemy')
+
+            if enemy not in enemies:
+                continue
+
+            if enemy == 'bat':
+                self._bats.append(Bat(scene, obj))
+
+            elif enemy == 'ghost':
+                self._ghosts.append(Ghost(scene, obj))
+
+            else: # 'pendulum'
+                self._pendulums.append(Pendulum(scene, obj))
 
     def loop(self):
         if self._parent.io.is_sonar or \
@@ -63,11 +78,7 @@ class Base(base.Base):
             self._ghosts.hit(ray_position, ray_direction)
 
 
-class Enemies:
-    __slots__ = (
-            "ray_filter",
-            )
-
+class Enemy:
     def __init__(self):
         self._ray_filter = ""
 
@@ -77,23 +88,30 @@ class Enemies:
         """
         TODO
 
-
-class Bats(Enemies):
-    def __init__(self):
-        Enemies.__init__(self)
-
-        self._ray_filter = "bat"
-        self._bats = []
+    def addObject(self, scene, object_name, object_origin):
+        """
+        Spawn a new object in the game
+        """
+        return scene.addObject(object_name, object_origin)
 
 
-class Ghosts(Enemies):
-    def __init__(self):
-        Enemies.__init__(self)
+class Bat(Enemy):
+    def __init__(self, scene, obj):
+        Enemy.__init__(self)
 
-        self._ray_filter = "ghost"
-        self._ghosts = []
+        self._ray_filter = 'bat'
+        self._dupli_object = self.addObject(scene, 'Bat', obj)
 
 
-class Pendulum(Enemies):
-    def __init__(self):
-        Enemies.__init__(self)
+class Ghost(Enemy):
+    def __init__(self, scene, obj):
+        Enemy.__init__(self)
+
+        self._ray_filter = 'ghost'
+        self._dupli_object = self.addObject(scene, 'Ghost', obj)
+
+
+class Pendulum(Enemy):
+    def __init__(self, scene, obj):
+        Enemy.__init__(self)
+        self._dupli_object = obj
