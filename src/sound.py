@@ -17,7 +17,21 @@ TODO = True
 class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
+
+        self._setupSoundEngine()
         self._setupEnemies()
+
+    def _setupSoundEngine(self):
+        """
+        """
+        is_debug = self._parent.is_debug
+        osc = not is_debug and \
+              logic.BlenderVR.getPlugin('osc') if hasattr(logic, 'BlenderVR') else None
+
+        if osc and osc.isAvailable():
+            self._engine = OSCSoundEngine(osc)
+        else:
+            self._engine = AudaspaceSoundEngine()
 
     def _setupEnemies(self):
         """
@@ -33,22 +47,93 @@ class Base(base.Base):
         for pendulum in self._parent.ai.pendulums:
             pendulum.setSound(Pendulum(pendulum.sound_source, force_fallback=is_debug))
 
-    def loop(self):
-        pass
+    def setVolumeLow(self):
+        """
+        Low volume, flashlight is on
+        """
+        self._engine.setVolumeLow()
 
-    def increaseVolume(self):
+    def setVolumeNormal(self):
         """
+        Normal volume, initial
         """
-        pass
+        self._engine.setVolumeNormal()
 
-    def decreaseVolume(self):
+    def setVolumeHigh(self):
         """
+        High volume, sonar is on
         """
-        pass
+        self._engine.setVolumeLow()
 
 
 # ############################################################
 # Sound Engines Wrappers
+# ############################################################
+
+class SoundEngine:
+    def __init__(self, volumes):
+        self._volumes = volumes
+
+    def setVolumeLow(self):
+        """
+        Set the lowest volume level
+        """
+        self._volume = self._volumes[0]
+        self._updateVolume()
+
+    def setVolumeNormal(self):
+        """
+        Set the regular (initial) volume level
+        """
+        self._volume = self._volumes[1]
+        self._updateVolume()
+
+    def setVolumeHigh(self):
+        """
+        Set the highest volume level
+        """
+        self._volume = self._volumes[2]
+        self._updateVolume()
+
+
+class AudaspaceSoundEngine(SoundEngine):
+    def __init__(self):
+        SoundEngine.__init__(self, volumes=[0.15, 0.4, 0.85])
+        self.setVolumeNormal()
+
+    def _updateVolume(self):
+        TODO
+
+
+class OSCSoundEngine(SoundEngine):
+    def __init__(self, osc):
+        SoundEngine.__init__(self, volumes=[0.15, 0.4, 0.85])
+        self._osc = osc
+        self._initializeSound()
+
+    def _initializeSound(self):
+        """
+        Define global OSC parameters
+        """
+        osc_global = self._osc.getGlobal()
+        osc_global.start(True) # OSC msg: '/global start 1'
+        osc_global.mute(False) # OSC msg: '/global mute 0'
+        self.setVolumeNormal()
+
+    def _updateVolume(self):
+        """
+        OSC message: /global volume %40
+        """
+        try:
+            osc_global = self._osc.getGlobal()
+            osc_global.volume("%{0}".format(int(self._volume * 100)))
+
+        except Exception as E:
+            print(E)
+
+
+# ############################################################
+# Sound Objects Wrappers
 # ############################################################
 
 class AudaspaceSoundObject:

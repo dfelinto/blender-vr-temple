@@ -24,6 +24,13 @@ class Base(base.Base):
         print("setFlashlightMode({0})".format(power))
         logic.sendMessage("light")
 
+        if power:
+            self._parent.sound.setVolumeLow()
+
+        else:
+            self._parent.sound.setVolumeNormal()
+
+
     def setSonarMode(self, power=True):
         """
         Activate or Deactivate the sonar
@@ -33,10 +40,10 @@ class Base(base.Base):
         TODO
 
         if power:
-            self._parent.sound.increaseVolume()
+            self._parent.sound.setVolumeHigh()
 
         else:
-            self._parent.sound.decreaseVolume()
+            self._parent.sound.setVolumeNormal()
 
         """
         if power = True:
