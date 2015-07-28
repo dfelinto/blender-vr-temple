@@ -63,6 +63,7 @@ class Base(base.Base):
         objects = scene.objects
 
         enemies = {'bat', 'ghost', 'pendulum'}
+        target = scene.active_camera
 
         for obj in objects:
             enemy = obj.get('enemy')
@@ -71,13 +72,13 @@ class Base(base.Base):
                 continue
 
             if enemy == 'bat':
-                self._bats.append(Bat(scene, obj))
+                self._bats.append(Bat(scene, obj, target))
 
             elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj))
+                self._ghosts.append(Ghost(scene, obj, target))
 
             else: # 'pendulum'
-                self._pendulums.append(Pendulum(scene, obj))
+                self._pendulums.append(Pendulum(obj))
 
     def loop(self):
         if self._parent.io.is_sonar or \
@@ -137,7 +138,7 @@ class Enemy:
 
 
 class Bat(Enemy):
-    def __init__(self, scene, obj):
+    def __init__(self, scene, obj, target):
         Enemy.__init__(self)
 
         self._ray_filter = 'bat'
@@ -145,15 +146,18 @@ class Bat(Enemy):
 
 
 class Ghost(Enemy):
-    def __init__(self, scene, obj):
+    def __init__(self, scene, obj, target):
         Enemy.__init__(self)
 
         self._ray_filter = 'ghost'
         self._dupli_object = self.addObject(scene, 'Ghost', obj)
 
+        brain = self._dupli_object.actuators.get('brain')
+        brain.target = target
+
 
 class Pendulum(Enemy):
-    def __init__(self, scene, obj):
+    def __init__(self, obj):
         Enemy.__init__(self)
         self._dupli_object = obj
 
