@@ -62,9 +62,9 @@ class Temple:
         run once per frame, called from the processor file
         """
         self.io.loop()
+        self.ai.loop()
         self.sound.loop()
 
 
 def main():
-    import bge
-    bge.logic.temple = Temple()
+    logic.temple = Temple()
