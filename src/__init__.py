@@ -32,8 +32,8 @@ class Temple:
         self._setup()
 
         self.io = io.Base(self)
-        self.sound = sound.Base(self)
         self.ai = ai.Base(self)
+        self.sound = sound.Base(self)
 
     @property
     def is_debug(self):

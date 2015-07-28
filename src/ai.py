@@ -19,6 +19,8 @@ from bge import (
         logic,
         )
 
+import os
+
 from . import base
 
 TODO = True
@@ -38,6 +40,18 @@ class Base(base.Base):
         self._pendulums = []
 
         self._initializeEnemies()
+
+    @property
+    def bats(self):
+        return self._bats
+
+    @property
+    def ghosts(self):
+        return self._ghosts
+
+    @property
+    def pendulums(self):
+        return self._pendulums
 
     def _initializeEnemies(self):
         """
@@ -81,6 +95,15 @@ class Base(base.Base):
 class Enemy:
     def __init__(self):
         self._ray_filter = ""
+        self._dupli_object = None
+        self._sound = None
+
+    @property
+    def sound_source(self):
+        """
+        return the object to use as reference for the sound origin
+        """
+        return self._dupli_object
 
     def hit(origin, direction):
         """
@@ -93,6 +116,24 @@ class Enemy:
         Spawn a new object in the game
         """
         return scene.addObject(object_name, object_origin)
+
+    def setSound(self, sound):
+        """
+        Setup OSC sound engine, called from sound.py
+        """
+        self._sound = sound
+
+    def init(self):
+        """
+        Initialize the object, called from Logic Bricks
+        """
+        self._sound.play_init()
+
+    def end(self):
+        """
+        End the object, called from Logic Bricks
+        """
+        self._sound.play_end()
 
 
 class Bat(Enemy):
@@ -115,3 +156,5 @@ class Pendulum(Enemy):
     def __init__(self, scene, obj):
         Enemy.__init__(self)
         self._dupli_object = obj
+
+
