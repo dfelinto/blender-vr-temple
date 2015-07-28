@@ -48,6 +48,10 @@ class Base(base.Base):
         """
         Flashlight button was pressed
         """
+        if self._sonar_power and not self._flashlight_power:
+            # we can do only one action at time
+            return
+
         self._flashlight_power = not self._flashlight_power
         self.setFlashlightMode(power = self._flashlight_power)
 
@@ -61,6 +65,10 @@ class Base(base.Base):
         """
         Sonar button was pressed
         """
+        if self._flashlight_power and not self._sonar_power:
+            # we can do only one action at time
+            return
+
         self._sonar_power = not self._sonar_power
         self.setSonarMode(power = self._sonar_power)
 
