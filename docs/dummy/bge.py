@@ -12,6 +12,10 @@ class logic:
         pass
 
     @staticmethod
+    def expandPath(path):
+        return path
+
+    @staticmethod
     def endGame():
         pass
 
