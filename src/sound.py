@@ -46,23 +46,22 @@ class Base(base.Base):
         """
         pass
 
-class BlenderSoundObject:
+
+# ############################################################
+# Sound Engines Wrappers
+# ############################################################
+
+class AudaspaceSoundObject:
     def __init__(self, kx_object):
         pass
 
-    def load(self, sound):
-        TODO
+    def play(self, sound, volume=0.5):
+        """
+        Load and play sound file
 
-    def loop(self, value):
-        TODO
-
-    def mute(self, value):
-        TODO
-
-    def start(self, value):
-        TODO
-
-    def volume(self, value):
+        sound type: str
+        volume type: float (0.0 to 1.0)
+        """
         TODO
 
 
@@ -74,15 +73,28 @@ class OSCSoundObject:
         # 2) be updated each time the kx_object moved
         self._osc_object = osc.getObject(kx_object)
 
-    def load(self, sound):
+    def play(self, sound, volume=0.5):
+        """
+        Load and play sound file
+
+        sound type: str
+        volume type: float (0.0 to 1.0)
+        """
+        self._sound_wrapper._load(sound)
+        self._sound_wrapper._loop(True)
+        self._sound_wrapper._mute(False)
+        self._sound_wrapper._volume(volume)
+        self._sound_wrapper._start(True)
+
+    def _load(self, sound):
         """
         OSC message: /object 1 sound HiThere.wav
 
-        value type: str
+        sound type: str
         """
         self._osc_object.sound(sound)
 
-    def loop(self, value):
+    def _loop(self, value):
         """
         OSC message: /object 1 loop 1
 
@@ -90,7 +102,7 @@ class OSCSoundObject:
         """
         self._osc_object.loop(value)
 
-    def mute(self, value):
+    def _mute(self, value):
         """
         OSC message: /object 1 mute 0
 
@@ -98,7 +110,7 @@ class OSCSoundObject:
         """
         self._osc_object.mute(value)
 
-    def start(self, value):
+    def _start(self, value):
         """
         OSC message: /object 1 start 1
 
@@ -106,7 +118,7 @@ class OSCSoundObject:
         """
         self._osc_object.start(value)
 
-    def volume(self, value):
+    def _volume(self, value):
         """
         OSC message: /object 1 volume %45
 
@@ -115,13 +127,17 @@ class OSCSoundObject:
         self._osc_object.volume("%{0}".format(int(value * 100)))
 
 
+# ############################################################
+# Enemies Sound Classes
+# ############################################################
+
 class Enemy:
     osc = logic.BlenderVR.getPlugin('osc') if hasattr(logic, 'BlenderVR') else None
     audio_folder = logic.expandPath('//../audio/')
 
     def __init__(self, sound_source, sound_init, sound_end, force_fallback):
         if force_fallback or not self.osc:
-            self._sound_wrapper = BlenderSoundObject(sound_source)
+            self._sound_wrapper = AudaspaceSoundObject(sound_source)
         else:
             self._sound_wrapper = OSCSoundObject(self.osc, sound_source)
 
@@ -132,21 +148,13 @@ class Enemy:
         """
         Play sound for when the object is active (e.g., flying)
         """
-        self._sound_wrapper.load(self._sound_init)
-        self._sound_wrapper.loop(True)
-        self._sound_wrapper.mute(False)
-        self._sound_wrapper.volume(0.45)
-        self._sound_wrapper.start(True)
+        self._sound_wrapper.play(self._sound_init)
 
     def play_end(self):
         """
         Play sound for when the object ends (e.g., is hit by rock)
         """
-        self._sound_wrapper.load(self._sound_end)
-        self._sound_wrapper.loop(True)
-        self._sound_wrapper.mute(False)
-        self._sound_wrapper.volume(0.45)
-        self._sound_wrapper.start(True)
+        self._sound_wrapper.play(self._sound_end)
 
     @property
     def sound_init(self):
