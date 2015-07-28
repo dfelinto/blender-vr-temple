@@ -5,10 +5,6 @@ Artificial Intelligence
 Control the enemies behaviour (bats, ghosts, pendulum)
 """
 
-from . import base
-
-TODO = True
-
 """
 Short Term Task list:
 
@@ -24,6 +20,10 @@ Short Term Task list:
 
 * remember to store a unique property in each of the spawned objects to make them unique for messages
 """
+
+from . import base
+
+TODO = True
 
 class Base(base.Base):
     __slots__ = (
