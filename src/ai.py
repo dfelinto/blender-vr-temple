@@ -139,7 +139,7 @@ class Enemy:
 
 class Bat(Enemy):
     def __init__(self, scene, obj, target):
-        Enemy.__init__(self)
+        super(Bat, self).__init__()
 
         self._ray_filter = 'bat'
         self._dupli_object = self.addObject(scene, 'Bat', obj)
@@ -150,7 +150,7 @@ class Bat(Enemy):
 
 class Ghost(Enemy):
     def __init__(self, scene, obj, target):
-        Enemy.__init__(self)
+        super(Ghost, self).__init__()
 
         self._ray_filter = 'ghost'
         self._dupli_object = self.addObject(scene, 'Ghost', obj)
@@ -161,7 +161,7 @@ class Ghost(Enemy):
 
 class Pendulum(Enemy):
     def __init__(self, obj):
-        Enemy.__init__(self)
+        super(Pendulum, self).__init__()
         self._dupli_object = obj
 
 
