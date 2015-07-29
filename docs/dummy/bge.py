@@ -28,3 +28,8 @@ class render:
 
     LEFT_EYE = 0
     RIGHT_EYE = 1
+
+
+class types:
+    def __init__(self):
+        pass
