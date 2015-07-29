@@ -33,3 +33,9 @@ class render:
 class types:
     def __init__(self):
         pass
+
+    class KX_GameObject:
+        pass
+
+    class BL_ArmatureObject:
+        pass
