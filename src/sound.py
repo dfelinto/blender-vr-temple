@@ -140,11 +140,12 @@ class AudaspaceSoundObject:
     def __init__(self, kx_object):
         pass
 
-    def play(self, sound, volume=0.5):
+    def play(self, sound, loop=False, volume=0.5):
         """
         Load and play sound file
 
         sound type: str
+        loop type: bool
         volume type: float (0.0 to 1.0)
         """
         TODO
@@ -158,15 +159,16 @@ class OSCSoundObject:
         # 2) be updated each time the kx_object moved
         self._osc_object = osc.getObject(kx_object)
 
-    def play(self, sound, volume=0.5):
+    def play(self, sound, loop=False,  volume=0.5):
         """
         Load and play sound file
 
         sound type: str
+        loop type: bool
         volume type: float (0.0 to 1.0)
         """
         self._sound_wrapper._load(sound)
-        self._sound_wrapper._loop(True)
+        self._sound_wrapper._loop(loop)
         self._sound_wrapper._mute(False)
         self._sound_wrapper._volume(volume)
         self._sound_wrapper._start(True)
@@ -229,17 +231,17 @@ class Enemy:
         self._sound_init = sound_init
         self._sound_end = sound_end
 
-    def play_init(self):
+    def playInit(self):
         """
         Play sound for when the object is active (e.g., flying)
         """
-        self._sound_wrapper.play(self._sound_init)
+        self._sound_wrapper.play(self._sound_init, loop=True)
 
-    def play_end(self):
+    def playEnd(self):
         """
         Play sound for when the object ends (e.g., is hit by rock)
         """
-        self._sound_wrapper.play(self._sound_end)
+        self._sound_wrapper.play(self._sound_end, loop=False)
 
     @property
     def sound_init(self):

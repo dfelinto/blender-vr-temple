@@ -142,27 +142,25 @@ class Enemy:
         """
         Initialize the object, called from Logic Bricks
         """
-        self._sound.play_init()
+        self._sound.playInit()
 
     def end(self):
         """
         End the object, called from Logic Bricks
         """
-        self._sound.play_end()
+        self._sound.playEnd()
 
     def changeState(self):
         """
         Called when the object changes to a relevant state, called from Logic Bricks
         """
-        TODO
-
         state = self._dupli_object.state
+
         if state & self._state_init:
-            print('init', self._dupli_object.name)
+            self.init()
 
         elif state & self._state_end:
-            print('end', self._dupli_object.name)
-
+            self.end()
 
     def _setDupliObject(self, obj):
         """
