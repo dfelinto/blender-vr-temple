@@ -8,8 +8,6 @@ Control the enemies behaviour (bats, ghosts, pendulum)
 """
 Short Term Task list:
 
-* check for their states, and initialize their sound if they are in a valid state
-
 * check for hitting, if position last long, triggers object death
 
 * remember to store a unique property in each of the spawned objects to make them unique for messages
@@ -88,10 +86,12 @@ class Base(base.Base):
             ray_position = self._parent.io.head_position
 
         if self._parent.io.is_sonar:
-            self._bats.hit(ray_position, ray_direction)
+            for bat in self._bats:
+                bat.hit(ray_position, ray_direction)
 
         if self._parent.io.is_flashlight:
-            self._ghosts.hit(ray_position, ray_direction)
+            for ghost in self._ghosts:
+                ghost.hit(ray_position, ray_direction)
 
 
 # ############################################################
@@ -103,6 +103,7 @@ class Enemy:
         self._ray_filter = ""
         self._dupli_object = None
         self._sound = None
+        self._active = False
         self._state_init = Enemy.getState(3)
         self._state_end = Enemy.getState(6)
 
@@ -120,10 +121,13 @@ class Enemy:
         """
         return self._dupli_object
 
-    def hit(origin, direction):
+    def hit(self, origin, direction):
         """
         try to hit an enemy from this origin at this direction
         """
+        if not self._active:
+            return
+
         TODO
 
     def addObject(self, scene, object_name, object_origin):
@@ -142,6 +146,7 @@ class Enemy:
         """
         Initialize the object, called from Logic Bricks
         """
+        self._active = True
         self._sound.playInit()
 
     def end(self):
