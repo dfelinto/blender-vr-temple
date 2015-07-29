@@ -144,6 +144,9 @@ class Bat(Enemy):
         self._ray_filter = 'bat'
         self._dupli_object = self.addObject(scene, 'Bat', obj)
 
+        brain = self._dupli_object.actuators.get('brain')
+        brain.target = target
+
 
 class Ghost(Enemy):
     def __init__(self, scene, obj, target):
