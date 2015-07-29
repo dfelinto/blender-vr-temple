@@ -17,6 +17,7 @@ Short Term Task list:
 
 from bge import (
         logic,
+        types,
         )
 
 import os
@@ -93,11 +94,24 @@ class Base(base.Base):
             self._ghosts.hit(ray_position, ray_direction)
 
 
+# ############################################################
+# Enemy Classes
+# ############################################################
+
 class Enemy:
     def __init__(self):
         self._ray_filter = ""
         self._dupli_object = None
         self._sound = None
+        self._state_init = Enemy.getState(3)
+        self._state_end = Enemy.getState(6)
+
+    @staticmethod
+    def getState(state):
+        """
+        return the bitwise flag corresponding to this state
+        """
+        return 1 << (state - 1)
 
     @property
     def sound_source(self):
@@ -136,13 +150,42 @@ class Enemy:
         """
         self._sound.play_end()
 
+    def changeState(self):
+        """
+        Called when the object changes to a relevant state, called from Logic Bricks
+        """
+        TODO
+
+        state = self._dupli_object.state
+        if state & self._state_init:
+            print('init', self._dupli_object.name)
+
+        elif state & self._state_end:
+            print('end', self._dupli_object.name)
+
+
+    def _setDupliObject(self, obj):
+        """
+        Setup the duplicated object to integrate with our Python code
+        """
+        bge_wrappers = {
+                types.KX_GameObject : KX_EnemyGameObject,
+                types.BL_ArmatureObject : BL_EnemyArmatureObject,
+                }
+
+        bge_class = obj.__class__
+        assert(bge_class in bge_wrappers)
+
+        # replace the BGE object class with our own
+        self._dupli_object = bge_wrappers[bge_class](obj, self)
+
 
 class Bat(Enemy):
     def __init__(self, scene, obj, target):
         super(Bat, self).__init__()
 
         self._ray_filter = 'bat'
-        self._dupli_object = self.addObject(scene, 'Bat', obj)
+        self._setDupliObject(self.addObject(scene, 'Bat', obj))
 
         brain = self._dupli_object.actuators.get('brain')
         brain.target = target
@@ -153,7 +196,7 @@ class Ghost(Enemy):
         super(Ghost, self).__init__()
 
         self._ray_filter = 'ghost'
-        self._dupli_object = self.addObject(scene, 'Ghost', obj)
+        self._setDupliObject(self.addObject(scene, 'Ghost', obj))
 
         brain = self._dupli_object.actuators.get('brain')
         brain.target = target
@@ -162,6 +205,33 @@ class Ghost(Enemy):
 class Pendulum(Enemy):
     def __init__(self, obj):
         super(Pendulum, self).__init__()
-        self._dupli_object = obj
+        self._setDupliObject(obj)
+
+
+# ############################################################
+# Custom KX_GameObject Wrapper
+# ############################################################
+
+class KX_EnemyGameObject(types.KX_GameObject):
+    def __init__(self, old_object, ai_class):
+        self.ai = ai_class
+
+
+class BL_EnemyArmatureObject(types.BL_ArmatureObject):
+    def __init__(self, old_object, ai_class):
+        self.ai = ai_class
+
+
+# ############################################################
+# Callback from Logic Bricks
+# ############################################################
+
+def changeState(cont):
+    """
+    Called from Logic Bricks upon change to relevant states
+    (e.g., start chasing, or end object)
+    """
+    enemy = cont.owner
+    enemy.ai.changeState()
 
 
