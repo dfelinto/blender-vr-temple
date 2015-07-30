@@ -60,6 +60,26 @@ if blendervr.is_virtual_environment():
             # self.logger.debug('######## RUN')
             if hasattr(bge.logic, "temple"):
                 bge.logic.temple.run()
+            else:
+                self.logger.error('Missing temple scripts')
+
+        def keyboardAndMouse(self, info):
+            from blendervr.player import device
+            temple = bge.logic.temple
+
+            _valid_state = {device.STATE_ACTIVE,}
+
+            if not info.get('key'):
+                return
+
+            if info['key'] == ord('1') and info['state'] in _valid_state:
+                temple.io.flashlightButton()
+
+            elif info['key'] == ord('2') and info['state'] in _valid_state:
+                temple.io.sonarButton()
+
+            elif info['key'] == ord('3') and info['state'] in _valid_state:
+                temple.io.rockButton()
 
         def quit(self):
             """
