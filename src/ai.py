@@ -124,6 +124,9 @@ class Enemy:
     def hit(self, origin, direction):
         """
         try to hit an enemy from this origin at this direction
+
+        origin type: mathutile.Vector
+        direction type: mathutils.Vector
         """
         if not self._active:
             return

@@ -47,12 +47,10 @@ class Base(base.Base):
 
         """
         if power = True:
-            * volume gets higher
             * screen get blurry
             * if pointing to a bat for long, bat goes away (handled in ai.py)
 
         else:
-            * volume gets lower
             * screen back to normal
         """
 
@@ -62,3 +60,5 @@ class Base(base.Base):
         """
         print("throwRock()")
         logic.sendMessage("rock")
+
+

@@ -58,7 +58,6 @@ class Base(base.Base):
         """
         * rotate the flashlight based on user position orientation (CAVE and OCULUS)
         * also should make the ghost react, and if it stays long in the same ghost, kills the ghost
-        * mute the sound (or make a lound flashlight sound)
         """
 
     def sonarButton(self):
