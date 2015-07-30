@@ -23,6 +23,7 @@ class Base(base.Base):
             "_matrix"
             "_sonar_power",
             "_use_headtrack",
+            "_headtrack_user",
             )
 
     def __init__(self, parent):
@@ -37,9 +38,8 @@ class Base(base.Base):
         # Sonar
         self._sonar_power = False
 
-        # Head Tracking
+        # Head Tracking is disabled unless enabled from BlenderVRg
         self._use_headtrack = False
-        self._setupHeadTrack()
 
         # Flashlight and Rock thrower
         self._direction_object = objects.get('Spot')
@@ -87,23 +87,16 @@ class Base(base.Base):
     def _resetMatrix(self):
         self._matrix = None
 
-    def _setupHeadTrack(self):
+    def enableHeadTrack(self, user):
         """
-        If BlenderVR has headtracking setup we use it
-        """
-        is_debug = self._parent.is_debug
+        Use Headtrack (instead of mouse) to control the scene
+        Called from BlenderVR processor file
 
-        if is_debug or not hasattr(logic, 'BlenderVR'):
-            return
-
-        vrpn = logic.BlenderVR.getPlugin('vrpn')
-        oculus_dk2 = logic.BlenderVR.getPlugin('oculus_dk2')
-
+        :param user: BlenderVR User
         """
-        * get user
-        * see if this user is in any vrpn > tracker > user
-        * see if this user is in any oculus_dk2 > user
-        """
+        self._headtrack_user = user
+        self._use_headtrack = True
+
     def _getHeadMatrix(self):
         """
         :rtype: mathutils.Matrix
@@ -113,6 +106,12 @@ class Base(base.Base):
 
         if self._use_headtrack:
             TODO
+            """
+            UNTESTED, 150% likely to be wrong, though the idea is that
+            """
+            self._matrix = self._headtrack_user.getPosition() * \
+                    self._headtrack_user.getVehiclePosition() * \
+                    self._camera.worldTransform
         else:
             self._matrix = self._camera.worldTransform
 
