@@ -223,7 +223,7 @@ class Enemy:
     audio_folder = logic.expandPath('//../audio/')
 
     def __init__(self, sound_source, sound_init, sound_end, force_fallback):
-        if force_fallback or not self.osc:
+        if force_fallback or not (self.osc and self.osc.isAvailable):
             self._sound_wrapper = AudaspaceSoundObject(sound_source)
         else:
             self._sound_wrapper = OSCSoundObject(self.osc, sound_source)
