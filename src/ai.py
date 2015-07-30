@@ -82,8 +82,8 @@ class Base(base.Base):
     def loop(self):
         if self._parent.io.is_sonar or \
            self._parent.io.is_flashlight:
-            ray_direction = self._parent.io.head_direction
             ray_position = self._parent.io.head_position
+            ray_direction = self._parent.io.head_direction
 
         if self._parent.io.is_sonar:
             for bat in self._bats:
@@ -125,8 +125,8 @@ class Enemy:
         """
         try to hit an enemy from this origin at this direction
 
-        origin type: mathutile.Vector
-        direction type: mathutils.Vector
+        origin type: mathutils.Vector
+        direction type: mathutils.Quaternion
         """
         if not self._active:
             return
