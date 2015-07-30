@@ -222,10 +222,16 @@ class KX_EnemyGameObject(types.KX_GameObject):
     def __init__(self, old_object, ai_class):
         self.ai = ai_class
 
+# Hack for BlenderVR syncronization to recognize this class
+KX_EnemyGameObject.__name__ = 'KX_GameObject'
+
 
 class BL_EnemyArmatureObject(types.BL_ArmatureObject):
     def __init__(self, old_object, ai_class):
         self.ai = ai_class
+
+# Hack for BlenderVR syncronization to recognize this class
+BL_EnemyArmatureObject.__name__ = 'BL_ArmatureObject'
 
 
 # ############################################################
