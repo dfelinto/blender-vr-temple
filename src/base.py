@@ -12,11 +12,17 @@ class Base:
     def loop(self):
         pass
 
+    """
+    # disabled because __dict__ doesn't have all the
+    # functions and attributes of a class
+    # (and because this wasn't really needed)
+
     def __getattr__(self, attrname):
         if attrname in self.__dict__:
             return self.__dict__[attrname]
         else:
             return Pipe(self._parent, attrname)
+    """
 
 
 class Pipe():
