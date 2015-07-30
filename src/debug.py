@@ -40,7 +40,9 @@ class Base(base.Base):
         run once per frame called from a callback
         """
         self._keyboard()
+        self._parent.io.loop()
         self._parent.ai.loop()
+        self._parent.sound.loop()
 
     def _keyboard(self):
 
