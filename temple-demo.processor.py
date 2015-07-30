@@ -7,8 +7,22 @@ if blendervr.is_virtual_environment():
     import bge
 
     class Processor(blendervr.processor.getProcessor()):
+        __slots__ = {
+                "_initialized",
+                "OSC",
+                "_user",
+                "_user_name",
+                }
+
         def __init__(self, parent):
             super(Processor, self).__init__(parent)
+
+            # to setup temple in the first run()
+            self._initialized = False
+
+            # headtracked user (that controls the flashlight and rocks)
+            self._user_name = 'user A'
+            self._user = None
 
             if self.BlenderVR.isMaster():
                 self.BlenderVR.getSceneSynchronizer().getItem(bge.logic).activate(True, True)
@@ -23,10 +37,10 @@ if blendervr.is_virtual_environment():
                     # get access to BlenderVR OSC API
                     self.OSC = self.BlenderVR.getPlugin('osc')
 
-
                     try: # check if OSC client is available
                         osc_isAvailable = self.OSC.isAvailable()
                         self.logger.debug('OSC Client is available:', osc_isAvailable)
+
                     except AttributeError: # i.e. plugin self.OSC not instantiated
                         self.logger.warning('OSC plugin not/badly defined in configuration file -> OSC disabled')
 
@@ -53,17 +67,21 @@ if blendervr.is_virtual_environment():
                     # Without it, some errors won't be printed out in either windows (console's nor master's nor slave's).
                     self.logger.log_traceback(False)
 
+                # handle users to control the Temple Demo
+                self._user = self.BlenderVR.getUserByName(self._user_name)
+
         def run(self):
             """
             BlenderVR Callback, called every frame.
             """
-            # self.logger.debug('######## RUN')
-            if hasattr(bge.logic, "temple"):
-                bge.logic.temple.run()
-            else:
-                self.logger.error('Missing temple scripts')
+            self._setupTemple()
+            bge.logic.temple.run()
 
         def keyboardAndMouse(self, info):
+            """
+            Debug input entry, to be replaced by individual callbacks
+            for each of the events (flashlight, sonar, rock)
+            """
             from blendervr.player import device
             temple = bge.logic.temple
 
@@ -97,6 +115,25 @@ if blendervr.is_virtual_environment():
                     self.logger.debug("## Quit my Processor")
                 except:
                     self.logger.log_traceback(False)
+
+        def _setupTemple(self):
+            if self._initialized:
+                return
+
+            if hasattr(bge.logic, "temple"):
+                temple = bge.logic.temple
+
+                user = self._user
+
+                # use head tracking instead of mouse to
+                # control flashlight and rock thrower
+                temple.io.enableHeadTrack(user)
+
+            else:
+                self.logger.error('Missing temple scripts')
+                self.BlenderVR.quit()
+
+            self._initialized = True
 
 
 elif blendervr.is_creating_loader():
