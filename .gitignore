@@ -5,3 +5,6 @@ __pycache__
 /docs/venv
 /docs/html
 /docs/src
+
+*.bgeconf
+.*.vr.blend
