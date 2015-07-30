@@ -53,7 +53,7 @@ class Base(base.Base):
             return
 
         self._flashlight_power = not self._flashlight_power
-        self.setFlashlightMode(power = self._flashlight_power)
+        self._parent.events.setFlashlightMode(power=self._flashlight_power)
 
         """
         * rotate the flashlight based on user position orientation (CAVE and OCULUS)
@@ -69,13 +69,13 @@ class Base(base.Base):
             return
 
         self._sonar_power = not self._sonar_power
-        self.setSonarMode(power = self._sonar_power)
+        self._parent.events.setSonarMode(power=self._sonar_power)
 
     def rockButton(self):
         """
         Rock button was pressed
         """
-        self.throwRock()
+        self._parent.events.throwRock()
 
         """
         * should be thrown relative to your current orientation
