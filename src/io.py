@@ -69,7 +69,7 @@ class Base(base.Base):
         """
         Get the direction of the player's head
 
-        rtype: mathutils.Quaternion
+        :rtype: mathutils.Quaternion
         """
         matrix = self._getHeadMatrix()
         return matrix.to_quaternion()
@@ -79,7 +79,7 @@ class Base(base.Base):
         """
         Get the direction of the player's head
 
-        rtype: mathutils.Vector
+        :rtype: mathutils.Vector
         """
         matrix = self._getHeadMatrix()
         return matrix.translation
@@ -106,7 +106,7 @@ class Base(base.Base):
         """
     def _getHeadMatrix(self):
         """
-        rtype: mathutils.Matrix
+        :rtype: mathutils.Matrix
         """
         if self._matrix:
             return self._matrix

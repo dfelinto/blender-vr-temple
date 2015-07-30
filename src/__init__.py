@@ -41,7 +41,7 @@ class Temple:
 
     def _debug(self):
         """
-        if BlenderVR is not running hookup the debug module
+        If BlenderVR is not running hookup the debug module
         """
         self._is_debug = not hasattr(logic, 'BlenderVR')
 
@@ -52,14 +52,14 @@ class Temple:
 
     def _setup(self):
         """
-        setup required settings and bge related events
+        Setup required settings and bge related events
         """
         pass
         # store global objects
 
     def run(self):
         """
-        run once per frame, called from the processor file
+        Run once per frame, called from the processor file
         """
         self.io.loop()
         self.ai.loop()

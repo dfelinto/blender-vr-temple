@@ -110,14 +110,14 @@ class Enemy:
     @staticmethod
     def getState(state):
         """
-        return the bitwise flag corresponding to this state
+        Return the bitwise flag corresponding to this state
         """
         return 1 << (state - 1)
 
     @property
     def sound_source(self):
         """
-        return the object to use as reference for the sound origin
+        Return the object to use as reference for the sound origin
         """
         return self._dupli_object
 
@@ -125,8 +125,8 @@ class Enemy:
         """
         try to hit an enemy from this origin at this direction
 
-        origin type: mathutils.Vector
-        direction type: mathutils.Quaternion
+        :type origin: mathutils.Vector
+        :type direction: mathutils.Quaternion
         """
         if not self._active:
             return

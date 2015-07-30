@@ -37,7 +37,7 @@ class Base(base.Base):
 
     def loop(self):
         """
-        run once per frame called from a callback
+        Run once per frame called from a callback
         """
         self._keyboard()
         self._parent.io.loop()

@@ -144,9 +144,9 @@ class AudaspaceSoundObject:
         """
         Load and play sound file
 
-        sound type: str
-        loop type: bool
-        volume type: float (0.0 to 1.0)
+        :type sound: str
+        :type loop: bool
+        :type volume: float (0.0 to 1.0)
         """
         TODO
 
@@ -163,9 +163,10 @@ class OSCSoundObject:
         """
         Load and play sound file
 
-        sound type: str
-        loop type: bool
-        volume type: float (0.0 to 1.0)
+        :param sound: The sound file filepath
+        :type sound: str
+        :type loop: bool
+        :type volume: float (0.0 to 1.0)
         """
         self._sound_wrapper._load(sound)
         self._sound_wrapper._loop(loop)
@@ -177,7 +178,8 @@ class OSCSoundObject:
         """
         OSC message: /object 1 sound HiThere.wav
 
-        sound type: str
+        :param sound: The sound file filepath
+        :type sound: str
         """
         self._osc_object.sound(sound)
 
@@ -185,7 +187,7 @@ class OSCSoundObject:
         """
         OSC message: /object 1 loop 1
 
-        value type: bool
+        :type value: bool
         """
         self._osc_object.loop(value)
 
@@ -193,7 +195,7 @@ class OSCSoundObject:
         """
         OSC message: /object 1 mute 0
 
-        value type: bool
+        :type value: bool
         """
         self._osc_object.mute(value)
 
@@ -201,7 +203,7 @@ class OSCSoundObject:
         """
         OSC message: /object 1 start 1
 
-        value type: bool
+        :type value: bool
         """
         self._osc_object.start(value)
 
@@ -209,7 +211,7 @@ class OSCSoundObject:
         """
         OSC message: /object 1 volume %45
 
-        value type: float (0.0 to 1.0)
+        :type value: float (0.0 to 1.0)
         """
         self._osc_object.volume("%{0}".format(int(value * 100)))
 
