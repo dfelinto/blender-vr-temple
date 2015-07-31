@@ -146,7 +146,7 @@ class Base(base.Base):
         """
         if self._sonar_power and not self._flashlight_power:
             # we can do only one action at time
-            return
+            self.sonarButton()
 
         self._flashlight_power = not self._flashlight_power
         self._parent.events.setFlashlightMode(power=self._flashlight_power)
@@ -161,7 +161,7 @@ class Base(base.Base):
         """
         if self._flashlight_power and not self._sonar_power:
             # we can do only one action at time
-            return
+            self.flashlightButton()
 
         self._sonar_power = not self._sonar_power
         self._parent.events.setSonarMode(power=self._sonar_power)
