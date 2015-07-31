@@ -70,9 +70,10 @@ class Base(base.Base):
                 self._pendulums.append(Pendulum(obj))
 
     def loop(self):
+        ray_position = self._parent.io.head_position
+
         if self._parent.io.is_sonar or \
            self._parent.io.is_flashlight:
-            ray_position = self._parent.io.head_position
             ray_direction = self._parent.io.head_direction
 
         if self._parent.io.is_sonar:
@@ -80,6 +81,12 @@ class Base(base.Base):
 
         if self._parent.io.is_flashlight:
             Ghost.hit(self._target, ray_position, ray_direction)
+
+        for bat in self._bats:
+            bat.attack(ray_position)
+
+        for ghost in self._ghosts:
+            ghost.attack(ray_position)
 
 
 # ############################################################
@@ -89,6 +96,7 @@ class Base(base.Base):
 class Enemy:
     ray_filter = ''
     instances = 0
+    attack_distance_squared = 0.01
 
     def __init__(self):
         self._dupli_object = None
@@ -138,12 +146,25 @@ class Enemy:
         """
         obj, hit, normal = camera.rayCast(origin + direction, origin, 20.0, cls.ray_filter, 1, 1)
         if obj:
-            logic.sendMessage(obj.ai.subject)
-            print('sending message: ', obj.ai.subject)
+            obj.ai.kill()
+
+    def kill(self):
+        """
+        Send message to eliminate the object
+        It is called when we hit the enemy or the enemy hits us
+        """
+        if not self._active:
+            return
+
+        self._active = False
+        logic.sendMessage(self.subject)
+        print('kill', self._dupli_object.name)
 
     def addObject(self, scene, object_name, object_origin):
         """
         Spawn a new object in the game
+
+        :type object_origin: mathutils.Vector
         """
         return scene.addObject(object_name, object_origin)
 
@@ -178,6 +199,21 @@ class Enemy:
         elif state & self._state_end:
             self.end()
 
+    def attack(self, origin):
+        """
+        Check if enemy is close enough to eat
+
+        :type origin: mathutils.Vector
+        """
+        if not self._active:
+            return
+
+        obj = self._dupli_object
+        distance_squared = (obj.worldPosition - origin).length_squared
+
+        if distance_squared < self.attack_distance_squared:
+            self.kill()
+
     def _setDupliObject(self, obj):
         """
         Setup the duplicated object to integrate with our Python code
@@ -211,11 +247,11 @@ class Bat(Enemy):
 
 class Ghost(Enemy):
     ray_filter = 'ghost'
+    attack_distance_squared = 0.25
 
     def __init__(self, scene, obj, target):
         super(Ghost, self).__init__()
 
-        self._ray_filter = 'ghost'
         self._setDupliObject(self.addObject(scene, 'Ghost', obj))
 
         brain = self._dupli_object.actuators.get('brain')
@@ -228,7 +264,28 @@ class Ghost(Enemy):
 class Pendulum(Enemy):
     def __init__(self, obj):
         super(Pendulum, self).__init__()
-        self._setDupliObject(obj)
+
+        group = obj.groupMembers
+
+        # we wrapp the sphere and the pendulum objects
+        # because the sphere is detected by the collision sensor
+        # while the pendulum handles all the messages
+
+        sphere = group.get('Pendulum.Sphere')
+        self._setDupliObject(sphere)
+
+        pendulum = group.get('Pendulum')
+        self._setDupliObject(pendulum)
+
+    def attack(self):
+        """
+        Called from Logic Brick callback
+        We are already hitting the player
+        """
+        if not self._active:
+            return
+
+        self.kill()
 
 
 # ############################################################
@@ -262,5 +319,18 @@ def changeState(cont):
     """
     enemy = cont.owner
     enemy.ai.changeState()
+
+
+def attacked(cont):
+    """
+    Called from Logic Bricks upon collision with enemy
+
+    Only pendulum collides this way, the other objects
+    Use the steering actuator which is incompatible with
+    physics sensors
+    """
+    sensor = cont.sensors[0]
+    for obj in sensor.hitObjectList:
+        obj.ai.attack()
 
 
