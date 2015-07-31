@@ -29,7 +29,6 @@ class Temple:
         self.events = events.Base(self)
 
         self._debug()
-        self._setup()
 
         self.io = io.Base(self)
         self.ai = ai.Base(self)
@@ -49,13 +48,6 @@ class Temple:
             return
 
         self.debug = debug.Base(self)
-
-    def _setup(self):
-        """
-        Setup required settings and bge related events
-        """
-        pass
-        # store global objects
 
     def run(self):
         """
