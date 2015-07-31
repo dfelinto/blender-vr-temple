@@ -99,6 +99,8 @@ class Base(base.Base):
 # ############################################################
 
 class Enemy:
+    instances = 0
+
     def __init__(self):
         self._ray_filter = ""
         self._dupli_object = None
@@ -106,6 +108,7 @@ class Enemy:
         self._active = False
         self._state_init = Enemy.getState(3)
         self._state_end = Enemy.getState(6)
+        self._id = self.__class__.calculateId()
 
     @staticmethod
     def getState(state):
@@ -120,6 +123,21 @@ class Enemy:
         Return the object to use as reference for the sound origin
         """
         return self._dupli_object
+
+    @property
+    def subject(self):
+        """
+        Message subject to use with the Message sensor to end the object
+        """
+        return "{0}.die.{1}".format(self.ray_filter, self._id)
+
+    @classmethod
+    def calculateId(cls):
+        """
+        Generates a new id based on the number of added instances
+        """
+        cls.instances += 1
+        return cls.instances
 
     def hit(self, origin, direction):
         """
