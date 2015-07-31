@@ -85,7 +85,7 @@ if blendervr.is_virtual_environment():
             from blendervr.player import device
             temple = bge.logic.temple
 
-            _valid_state = {device.STATE_ACTIVE,}
+            _valid_state = {device.STATE_PRESS,}
 
             if not info.get('key'):
                 return
