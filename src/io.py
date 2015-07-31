@@ -151,10 +151,6 @@ class Base(base.Base):
         self._flashlight_power = not self._flashlight_power
         self._parent.events.setFlashlightMode(power=self._flashlight_power)
 
-        """
-        * also should make the ghost react, and if it stays long in the same ghost, kills the ghost
-        """
-
     def sonarButton(self):
         """
         Sonar button was pressed
@@ -172,6 +168,4 @@ class Base(base.Base):
         """
         self._parent.events.throwRock()
 
-        """
-        * if it hits a bat, make it faster
-        """
+

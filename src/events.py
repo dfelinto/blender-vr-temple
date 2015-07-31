@@ -21,7 +21,7 @@ class Base(base.Base):
         """
         Activate or Deactivate the flashlight
         """
-        print("setFlashlightMode({0})".format(power))
+        #print("setFlashlightMode({0})".format(power))
         logic.sendMessage("light")
 
         if power:
@@ -35,7 +35,7 @@ class Base(base.Base):
         """
         Activate or Deactivate the sonar
         """
-        print("setSonarMode({0})".format(power))
+        #print("setSonarMode({0})".format(power))
         logic.sendMessage("sonar")
 
         if power:
@@ -50,13 +50,15 @@ class Base(base.Base):
             * screen get blurry
         else:
             * screen back to normal
+
+            (gotta test if we can use 2d filter and side-by-side - oculus mode)
         """
 
     def throwRock(self):
         """
         Throw a rock (to hit a pendulum)
         """
-        print("throwRock()")
+        #print("throwRock()")
         logic.sendMessage("rock")
 
 
