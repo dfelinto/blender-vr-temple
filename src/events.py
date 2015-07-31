@@ -11,8 +11,6 @@ from bge import (
 
 from . import base
 
-TODO = True
-
 class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
@@ -43,16 +41,6 @@ class Base(base.Base):
 
         else:
             self._parent.sound.setVolumeNormal()
-
-        TODO
-        """
-        if power = True:
-            * screen get blurry
-        else:
-            * screen back to normal
-
-            (gotta test if we can use 2d filter and side-by-side - oculus mode)
-        """
 
     def throwRock(self):
         """
