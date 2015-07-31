@@ -69,6 +69,18 @@ class Base(base.Base):
         """
         Get the direction of the player's head
 
+        :rtype: mathutils.Vector (normalized)
+        """
+        ray_orientation = self.head_orientation
+        direction = ray_orientation * Vector((0.0, 0.0, -1.0))
+
+        return direction.normalized()
+
+    @property
+    def head_orientation(self):
+        """
+        Get the direction of the player's head
+
         :rtype: mathutils.Quaternion
         """
         matrix = self._getHeadMatrix()
@@ -123,9 +135,9 @@ class Base(base.Base):
         current head orientation
         """
         position = self.head_position
-        direction = self.head_direction
+        orientation = self.head_orientation
 
-        self._direction_object.worldOrientation = direction
+        self._direction_object.worldOrientation = orientation
         self._direction_object.worldPosition = position
 
     def flashlightButton(self):
