@@ -29,6 +29,7 @@ class Base(base.Base):
             "_bats",
             "_ghosts",
             "_pendulums",
+            "_target",
             )
 
     def __init__(self, parent):
@@ -62,7 +63,7 @@ class Base(base.Base):
         objects = scene.objects
 
         enemies = {'bat', 'ghost', 'pendulum'}
-        target = scene.active_camera
+        self._target = scene.active_camera
 
         for obj in objects:
             enemy = obj.get('enemy')
@@ -71,10 +72,10 @@ class Base(base.Base):
                 continue
 
             if enemy == 'bat':
-                self._bats.append(Bat(scene, obj, target))
+                self._bats.append(Bat(scene, obj, self._target))
 
             elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj, target))
+                self._ghosts.append(Ghost(scene, obj, self._target))
 
             else: # 'pendulum'
                 self._pendulums.append(Pendulum(obj))
@@ -86,12 +87,10 @@ class Base(base.Base):
             ray_direction = self._parent.io.head_direction
 
         if self._parent.io.is_sonar:
-            for bat in self._bats:
-                bat.hit(ray_position, ray_direction)
+            Bat.hit(self._target, ray_position, ray_direction)
 
         if self._parent.io.is_flashlight:
-            for ghost in self._ghosts:
-                ghost.hit(ray_position, ray_direction)
+            Ghost.hit(self._target, ray_position, ray_direction)
 
 
 # ############################################################
@@ -99,10 +98,10 @@ class Base(base.Base):
 # ############################################################
 
 class Enemy:
+    ray_filter = ''
     instances = 0
 
     def __init__(self):
-        self._ray_filter = ""
         self._dupli_object = None
         self._sound = None
         self._active = False
@@ -139,17 +138,19 @@ class Enemy:
         cls.instances += 1
         return cls.instances
 
-    def hit(self, origin, direction):
+    @classmethod
+    def hit(cls, camera, origin, direction):
         """
-        try to hit an enemy from this origin at this direction
+        Try to hit an enemy from this origin at this direction
+        If succeds, send a message to end the object
 
         :type origin: mathutils.Vector
         :type direction: mathutils.Quaternion
         """
-        if not self._active:
-            return
-
-        TODO
+        obj, hit, normal = camera.rayCast(origin + direction, origin, 20.0, cls.ray_filter, 1, 1)
+        if obj:
+            logic.sendMessage(obj.ai.subject)
+            print('sending message: ', obj.ai.subject)
 
     def addObject(self, scene, object_name, object_origin):
         """
@@ -205,17 +206,23 @@ class Enemy:
 
 
 class Bat(Enemy):
+    ray_filter = 'bat'
+
     def __init__(self, scene, obj, target):
         super(Bat, self).__init__()
 
-        self._ray_filter = 'bat'
         self._setDupliObject(self.addObject(scene, 'Bat', obj))
 
         brain = self._dupli_object.actuators.get('brain')
         brain.target = target
 
+        hermes = self._dupli_object.sensors.get('hermes')
+        hermes.subject = self.subject
+
 
 class Ghost(Enemy):
+    ray_filter = 'ghost'
+
     def __init__(self, scene, obj, target):
         super(Ghost, self).__init__()
 
@@ -224,6 +231,9 @@ class Ghost(Enemy):
 
         brain = self._dupli_object.actuators.get('brain')
         brain.target = target
+
+        hermes = self._dupli_object.sensors.get('hermes')
+        hermes.subject = self.subject
 
 
 class Pendulum(Enemy):
