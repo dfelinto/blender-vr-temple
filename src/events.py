@@ -37,7 +37,6 @@ class Base(base.Base):
         """
         print("setSonarMode({0})".format(power))
         logic.sendMessage("sonar")
-        TODO
 
         if power:
             self._parent.sound.setVolumeHigh()
@@ -45,11 +44,10 @@ class Base(base.Base):
         else:
             self._parent.sound.setVolumeNormal()
 
+        TODO
         """
         if power = True:
             * screen get blurry
-            * if pointing to a bat for long, bat goes away (handled in ai.py)
-
         else:
             * screen back to normal
         """

@@ -4,15 +4,6 @@ Artificial Intelligence
 
 Control the enemies behaviour (bats, ghosts, pendulum)
 """
-
-"""
-Short Term Task list:
-
-* check for hitting, if position last long, triggers object death
-
-* remember to store a unique property in each of the spawned objects to make them unique for messages
-"""
-
 from bge import (
         logic,
         types,
@@ -21,8 +12,6 @@ from bge import (
 import os
 
 from . import base
-
-TODO = True
 
 class Base(base.Base):
     __slots__ = (
