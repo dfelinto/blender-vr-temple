@@ -10,6 +10,7 @@ if blendervr.is_virtual_environment():
         __slots__ = {
                 "_initialized",
                 "OSC",
+                "_osc_user",
                 "_user",
                 "_user_name",
                 }
@@ -23,6 +24,7 @@ if blendervr.is_virtual_environment():
             # headtracked user (that controls the flashlight and rocks)
             self._user_name = 'user A'
             self._user = None
+            self._osc_user = None
 
             if self.BlenderVR.isMaster():
                 self.BlenderVR.getSceneSynchronizer().getItem(bge.logic).activate(True, True)
@@ -60,6 +62,8 @@ if blendervr.is_virtual_environment():
                         osc_user.mute(False) # OSC msg: '/user 1 mute 0'
                         osc_user.volume('%80') # OSC msg: '/user 1 volume %80'
                         # or equivalently, see .xml configuration
+
+                        self._osc_user = osc_user # we pass this to the main python scripts
 
                 except:
                     # this try/except using self.logger.log_traceback(False) is the best way
@@ -128,6 +132,8 @@ if blendervr.is_virtual_environment():
                 # use head tracking instead of mouse to
                 # control flashlight and rock thrower
                 temple.io.enableHeadTrack(user)
+
+                temple.sound.setOSCUser(self._osc_user)
 
             else:
                 self.logger.error('Missing temple scripts')

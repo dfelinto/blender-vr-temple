@@ -65,6 +65,13 @@ class Base(base.Base):
         """
         self._engine.setVolumeLow()
 
+    def setOSCUser(self, user):
+        """
+        Specify the OSC User to use
+        """
+        if self._engine.__class__ == OSCSoundEngine:
+            self._engine.setOSCUser(user)
+
 
 # ############################################################
 # Sound Engines Wrappers
@@ -168,10 +175,17 @@ class AudaspaceSoundObject:
 class OSCSoundObject:
     def __init__(self, osc, engine, kx_object):
 
+        osc_user = engine.getUser()
+
         # because of the following line, the kx_object 4x4 orientation matrix will
         # 1) be sent to the OSC client
         # 2) be updated each time the kx_object moved
         self._osc_object = osc.getObject(kx_object)
+
+        # define audio link between osc object and user
+        osc_object_user = osc.getObjectUser(self._osc_object, osc_user)
+        osc_object_user.mute(False) # OSC msg: '/objectUser 1 0 mute 0'
+        osc_object_user.volume('%50') # OSC msg: '/objectUser 1 0 volume %50'
 
     def play(self, sound, loop=False,  volume=0.5):
         """
