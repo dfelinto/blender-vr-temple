@@ -29,9 +29,9 @@ class Base(base.Base):
               logic.BlenderVR.getPlugin('osc') if hasattr(logic, 'BlenderVR') else None
 
         if osc and osc.isAvailable():
-            self._engine = OSCSoundEngine(osc)
+            self._engine = OSCSoundEngine(osc, self.logger)
         else:
-            self._engine = AudaspaceSoundEngine()
+            self._engine = AudaspaceSoundEngine(self.logger)
 
     def _setupEnemies(self):
         """
@@ -39,13 +39,13 @@ class Base(base.Base):
         is_debug = self._parent.is_debug
 
         for bat in self._parent.ai.bats:
-            bat.setSound(Bat(bat.sound_source, force_fallback=is_debug))
+            bat.setSound(Bat(self._engine, bat.sound_source, force_fallback=is_debug))
 
         for ghost in self._parent.ai.ghosts:
-            ghost.setSound(Ghost(ghost.sound_source, force_fallback=is_debug))
+            ghost.setSound(Ghost(self._engine, ghost.sound_source, force_fallback=is_debug))
 
         for pendulum in self._parent.ai.pendulums:
-            pendulum.setSound(Pendulum(pendulum.sound_source, force_fallback=is_debug))
+            pendulum.setSound(Pendulum(self._engine, pendulum.sound_source, force_fallback=is_debug))
 
     def setVolumeLow(self):
         """
@@ -71,8 +71,9 @@ class Base(base.Base):
 # ############################################################
 
 class SoundEngine:
-    def __init__(self, volumes):
+    def __init__(self, logger, volumes):
         self._volumes = volumes
+        self.logger = logger
 
     def setVolumeLow(self):
         """
@@ -97,8 +98,8 @@ class SoundEngine:
 
 
 class AudaspaceSoundEngine(SoundEngine):
-    def __init__(self):
-        SoundEngine.__init__(self, volumes=[0.15, 0.4, 0.85])
+    def __init__(self, logger):
+        SoundEngine.__init__(self, logger, volumes=[0.15, 0.4, 0.85])
         self.setVolumeNormal()
 
     def _updateVolume(self):
@@ -106,10 +107,11 @@ class AudaspaceSoundEngine(SoundEngine):
 
 
 class OSCSoundEngine(SoundEngine):
-    def __init__(self, osc):
-        SoundEngine.__init__(self, volumes=[0.15, 0.4, 0.85])
+    def __init__(self, osc, logger):
+        SoundEngine.__init__(self, logger, volumes=[0.15, 0.4, 0.85])
         self._osc = osc
         self._initializeSound()
+        self._user = None
 
     def _initializeSound(self):
         """
@@ -131,13 +133,25 @@ class OSCSoundEngine(SoundEngine):
         except Exception as E:
             print(E)
 
+    def setUser(self, user):
+        """
+        called from the processor file
+        """
+        self._user = user
+
+    def getUser(self):
+        """
+        called from the OSC objects
+        """
+        return self._user
+
 
 # ############################################################
 # Sound Objects Wrappers
 # ############################################################
 
 class AudaspaceSoundObject:
-    def __init__(self, kx_object):
+    def __init__(self, engine, kx_object):
         pass
 
     def play(self, sound, loop=False, volume=0.5):
@@ -152,7 +166,7 @@ class AudaspaceSoundObject:
 
 
 class OSCSoundObject:
-    def __init__(self, osc, kx_object):
+    def __init__(self, osc, engine, kx_object):
 
         # because of the following line, the kx_object 4x4 orientation matrix will
         # 1) be sent to the OSC client
@@ -224,11 +238,13 @@ class Enemy:
     osc = logic.BlenderVR.getPlugin('osc') if hasattr(logic, 'BlenderVR') else None
     audio_folder = logic.expandPath('//../audio/')
 
-    def __init__(self, sound_source, sound_init, sound_end, force_fallback):
+    def __init__(self, engine, sound_source, sound_init, sound_end, force_fallback):
         if force_fallback or not (self.osc and self.osc.isAvailable):
-            self._sound_wrapper = AudaspaceSoundObject(sound_source)
+            self._sound_wrapper = AudaspaceSoundObject(engine, sound_source)
+            engine.logger.debug("Sound Wrapper relying on Audaspace")
         else:
-            self._sound_wrapper = OSCSoundObject(self.osc, sound_source)
+            self._sound_wrapper = OSCSoundObject(engine, self.osc, sound_source)
+            engine.logger.debug("Sound Wrapper relying on BlenderVR OSC")
 
         self._sound_init = sound_init
         self._sound_end = sound_end
@@ -258,23 +274,23 @@ class Bat(Enemy):
     sound_init = "bat.m4a"
     sound_end = "bat_end.m4a"
 
-    def __init__(self, sound_source, force_fallback=False):
-        super(Bat, self).__init__(sound_source, self.sound_init, self.sound_end, force_fallback)
+    def __init__(self, engine, sound_source, force_fallback=False):
+        super(Bat, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
 
 
 class Ghost(Enemy):
     sound_init = "ghost.m4a"
     sound_end = "ghost_end.m4a"
 
-    def __init__(self, sound_source, force_fallback=False):
-        super(Ghost, self).__init__(sound_source, self.sound_init, self.sound_end, force_fallback)
+    def __init__(self, engine, sound_source, force_fallback=False):
+        super(Ghost, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
 
 
 class Pendulum(Enemy):
     sound_init = "pendulum.m4a"
     sound_end = "pendulum_end.m4a"
 
-    def __init__(self, sound_source, force_fallback=False):
-        super(Pendulum, self).__init__(sound_source, self.sound_init, self.sound_end, force_fallback)
+    def __init__(self, engine, sound_source, force_fallback=False):
+        super(Pendulum, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
 
 
