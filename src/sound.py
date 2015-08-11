@@ -285,24 +285,24 @@ class Enemy:
 
 
 class Bat(Enemy):
-    sound_init = "bat.m4a"
-    sound_end = "bat_end.m4a"
+    sound_init = "bat.wav"
+    sound_end = "bat_end.wav"
 
     def __init__(self, engine, sound_source, force_fallback=False):
         super(Bat, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
 
 
 class Ghost(Enemy):
-    sound_init = "ghost.m4a"
-    sound_end = "ghost_end.m4a"
+    sound_init = "ghost.wav"
+    sound_end = "ghost_end.wav"
 
     def __init__(self, engine, sound_source, force_fallback=False):
         super(Ghost, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
 
 
 class Pendulum(Enemy):
-    sound_init = "pendulum.m4a"
-    sound_end = "pendulum_end.m4a"
+    sound_init = "pendulum.wav"
+    sound_end = "pendulum_end.wav"
 
     def __init__(self, engine, sound_source, force_fallback=False):
         super(Pendulum, self).__init__(engine, sound_source, self.sound_init, self.sound_end, force_fallback)
