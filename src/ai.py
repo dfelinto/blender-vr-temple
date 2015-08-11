@@ -53,6 +53,7 @@ class Base(base.Base):
 
         enemies = {'bat', 'ghost', 'pendulum'}
         self._target = scene.active_camera
+        logger = self.logger
 
         for obj in objects:
             enemy = obj.get('enemy')
@@ -61,13 +62,13 @@ class Base(base.Base):
                 continue
 
             if enemy == 'bat':
-                self._bats.append(Bat(scene, obj, self._target))
+                self._bats.append(Bat(scene, obj, self._target, logger))
 
             elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj, self._target))
+                self._ghosts.append(Ghost(scene, obj, self._target, logger))
 
             else: # 'pendulum'
-                self._pendulums.append(Pendulum(obj))
+                self._pendulums.append(Pendulum(obj, logger))
 
     def loop(self):
         ray_position = self._parent.io.head_position
@@ -98,13 +99,14 @@ class Enemy:
     instances = 0
     attack_distance_squared = 0.01
 
-    def __init__(self):
+    def __init__(self, logger):
         self._dupli_object = None
         self._sound = None
         self._active = False
         self._state_init = Enemy.getState(3)
         self._state_end = Enemy.getState(6)
         self._id = self.__class__.calculateId()
+        self.logger = logger
 
     @staticmethod
     def getState(state):
@@ -158,7 +160,7 @@ class Enemy:
 
         self._active = False
         logic.sendMessage(self.subject)
-        print('kill', self._dupli_object.name)
+        self.logger.debug('kill', self._dupli_object.name)
 
     def addObject(self, scene, object_name, object_origin):
         """
@@ -233,8 +235,8 @@ class Enemy:
 class Bat(Enemy):
     ray_filter = 'bat'
 
-    def __init__(self, scene, obj, target):
-        super(Bat, self).__init__()
+    def __init__(self, scene, obj, target, logger):
+        super(Bat, self).__init__(logger)
 
         self._setDupliObject(self.addObject(scene, 'Bat', obj))
 
@@ -249,8 +251,8 @@ class Ghost(Enemy):
     ray_filter = 'ghost'
     attack_distance_squared = 0.25
 
-    def __init__(self, scene, obj, target):
-        super(Ghost, self).__init__()
+    def __init__(self, scene, obj, target, logger):
+        super(Ghost, self).__init__(logger)
 
         self._setDupliObject(self.addObject(scene, 'Ghost', obj))
 
@@ -262,8 +264,8 @@ class Ghost(Enemy):
 
 
 class Pendulum(Enemy):
-    def __init__(self, obj):
-        super(Pendulum, self).__init__()
+    def __init__(self, obj, logger):
+        super(Pendulum, self).__init__(logger)
 
         group = obj.groupMembers
 

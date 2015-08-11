@@ -8,6 +8,7 @@ Basic class for all inherited classes.
 class Base:
     def __init__(self, parent):
         self._parent = parent
+        self.logger = parent.logger
 
     def loop(self):
         pass

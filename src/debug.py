@@ -24,7 +24,7 @@ class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
 
-        print("Starting Debug Mode")
+        self.logger.info("Starting Debug Mode")
         scene = logic.getCurrentScene()
         scene.pre_draw_setup.append(self._preDrawSetup)
         self._keys = []

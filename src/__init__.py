@@ -11,6 +11,7 @@ from . import (
         ai,
         events,
         io,
+        logger,
         sound,
         debug,
         )
@@ -22,12 +23,14 @@ class Temple:
             "debug",
             "events",
             "io",
+            "logger",
             "sound",
             )
 
     def __init__(self):
-        self.events = events.Base(self)
+        self.logger = logger.Base(self)
 
+        self.events = events.Base(self)
         self._debug()
 
         self.io = io.Base(self)

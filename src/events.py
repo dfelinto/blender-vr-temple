@@ -19,7 +19,7 @@ class Base(base.Base):
         """
         Activate or Deactivate the flashlight
         """
-        #print("setFlashlightMode({0})".format(power))
+        self.logger.debug("setFlashlightMode({0})".format(power))
         logic.sendMessage("light")
 
         if power:
@@ -33,7 +33,7 @@ class Base(base.Base):
         """
         Activate or Deactivate the sonar
         """
-        #print("setSonarMode({0})".format(power))
+        self.logger.debug("setSonarMode({0})".format(power))
         logic.sendMessage("sonar")
 
         if power:
@@ -46,7 +46,7 @@ class Base(base.Base):
         """
         Throw a rock (to hit a pendulum)
         """
-        #print("throwRock()")
+        self.logger.debug("throwRock()")
         logic.sendMessage("rock")
 
 
