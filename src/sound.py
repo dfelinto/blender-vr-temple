@@ -168,11 +168,11 @@ class OSCSoundObject:
         :type loop: bool
         :type volume: float (0.0 to 1.0)
         """
-        self._sound_wrapper._load(sound)
-        self._sound_wrapper._loop(loop)
-        self._sound_wrapper._mute(False)
-        self._sound_wrapper._volume(volume)
-        self._sound_wrapper._start(True)
+        self._load(sound)
+        self._loop(loop)
+        self._mute(False)
+        self._volume(volume)
+        self._start(True)
 
     def _load(self, sound):
         """
