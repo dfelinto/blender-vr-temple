@@ -12,6 +12,7 @@ from . import (
         events,
         io,
         logger,
+        score,
         sound,
         debug,
         )
@@ -24,17 +25,23 @@ class Temple:
             "events",
             "io",
             "logger",
+            "score",
             "sound",
             )
 
     def __init__(self):
-        self.logger = logger.Base(self)
+        # initialize them before so they don't clash recursion upon Base inheritance
+        self.events = None
+        self.logger = None
 
+        self.logger = logger.Base(self)
         self.events = events.Base(self)
+
         self._debug()
 
         self.io = io.Base(self)
         self.ai = ai.Base(self)
+        self.score = score.Base(self)
         self.sound = sound.Base(self)
 
     @property
@@ -58,6 +65,7 @@ class Temple:
         """
         self.io.loop()
         self.ai.loop()
+        self.score.loop()
         self.sound.loop()
 
 

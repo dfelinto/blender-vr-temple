@@ -54,6 +54,7 @@ class Base(base.Base):
         enemies = {'bat', 'ghost', 'pendulum'}
         self._target = scene.active_camera
         logger = self.logger
+        events = self.events
 
         for obj in objects:
             enemy = obj.get('enemy')
@@ -62,13 +63,13 @@ class Base(base.Base):
                 continue
 
             if enemy == 'bat':
-                self._bats.append(Bat(scene, obj, self._target, logger))
+                self._bats.append(Bat(scene, obj, self._target, events, logger))
 
             elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj, self._target, logger))
+                self._ghosts.append(Ghost(scene, obj, self._target, events, logger))
 
             else: # 'pendulum'
-                self._pendulums.append(Pendulum(obj, logger))
+                self._pendulums.append(Pendulum(obj, events, logger))
 
     def loop(self):
         ray_position = self._parent.io.head_position
@@ -99,7 +100,7 @@ class Enemy:
     instances = 0
     attack_distance_squared = 0.01
 
-    def __init__(self, logger):
+    def __init__(self, events, logger):
         self._dupli_object = None
         self._sound = None
         self._active = False
@@ -107,6 +108,7 @@ class Enemy:
         self._state_end = Enemy.getState(6)
         self._id = self.__class__.calculateId()
         self.logger = logger
+        self.events = events
 
     @staticmethod
     def getState(state):
@@ -147,8 +149,8 @@ class Enemy:
         :type direction: mathutils.Quaternion
         """
         obj, hit, normal = camera.rayCast(origin + direction, origin, 20.0, cls.ray_filter, 1, 1)
-        if obj:
-            obj.ai.kill()
+        if obj and obj.ai._active:
+            obj.ai.events.hitEnemy(obj.ai)
 
     def kill(self):
         """
@@ -182,6 +184,7 @@ class Enemy:
         """
         self._active = True
         self._sound.playInit()
+        self.events.spawnEnemy(self)
 
     def end(self):
         """
@@ -214,7 +217,7 @@ class Enemy:
         distance_squared = (obj.worldPosition - origin).length_squared
 
         if distance_squared < self.attack_distance_squared:
-            self.kill()
+            self.events.hitByEnemy(self)
 
     def _setDupliObject(self, obj):
         """
@@ -233,10 +236,11 @@ class Enemy:
 
 
 class Bat(Enemy):
+    enemy = 'BAT'
     ray_filter = 'bat'
 
-    def __init__(self, scene, obj, target, logger):
-        super(Bat, self).__init__(logger)
+    def __init__(self, scene, obj, target, events, logger):
+        super(Bat, self).__init__(events, logger)
 
         self._setDupliObject(self.addObject(scene, 'Bat', obj))
 
@@ -248,11 +252,12 @@ class Bat(Enemy):
 
 
 class Ghost(Enemy):
+    enemy = 'GHOST'
     ray_filter = 'ghost'
     attack_distance_squared = 0.25
 
-    def __init__(self, scene, obj, target, logger):
-        super(Ghost, self).__init__(logger)
+    def __init__(self, scene, obj, target, events, logger):
+        super(Ghost, self).__init__(events, logger)
 
         self._setDupliObject(self.addObject(scene, 'Ghost', obj))
 
@@ -264,8 +269,10 @@ class Ghost(Enemy):
 
 
 class Pendulum(Enemy):
-    def __init__(self, obj, logger):
-        super(Pendulum, self).__init__(logger)
+    enemy = 'PENDULUM'
+
+    def __init__(self, obj, events, logger):
+        super(Pendulum, self).__init__(events, logger)
 
         group = obj.groupMembers
 
@@ -287,7 +294,14 @@ class Pendulum(Enemy):
         if not self._active:
             return
 
-        self.kill()
+        self.events.hitByEnemy(self)
+
+    def end(self):
+        """
+        End the object, called from Logic Bricks
+        """
+        super(Pendulum, self).end()
+        self.events.hitEnemy(self)
 
 
 # ############################################################

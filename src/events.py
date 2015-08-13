@@ -49,4 +49,24 @@ class Base(base.Base):
         self.logger.debug("throwRock()")
         logic.sendMessage("rock")
 
+    def spawnEnemy(self, enemy):
+        """
+        A new enemy got spawned
+        """
+        self._parent.score.spawn(enemy.enemy)
+
+    def hitEnemy(self, enemy):
+        """
+        Enemy got hit, congratulations
+        """
+        self._parent.score.hit(enemy.enemy)
+        enemy.kill()
+
+    def hitByEnemy(self, enemy):
+        """
+        Enemy got the upper hand
+        """
+        self._parent.score.hitBy(enemy.enemy)
+        enemy.kill()
+
 

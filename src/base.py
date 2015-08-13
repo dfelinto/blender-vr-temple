@@ -9,6 +9,7 @@ class Base:
     def __init__(self, parent):
         self._parent = parent
         self.logger = parent.logger
+        self.events = parent.events
 
     def loop(self):
         pass
