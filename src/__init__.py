@@ -17,9 +17,12 @@ from . import (
         debug,
         )
 
+TODO = True
+
 class Temple:
     __slots__ = (
             "_is_debug",
+            "_speed",
             "ai",
             "debug",
             "events",
@@ -34,6 +37,8 @@ class Temple:
         self.events = None
         self.logger = None
 
+        self._speed = 1.0
+
         self.logger = logger.Base(self)
         self.events = events.Base(self)
 
@@ -47,6 +52,22 @@ class Temple:
     @property
     def is_debug(self):
         return self._is_debug
+
+    @property
+    def speed(self):
+        return self._speed
+
+    def bumpSpeed(self):
+        """
+        Increase global speed
+        """
+        self._speed *= 1.5
+
+        TODO
+
+        """
+        change base speed of kart animation
+        """
 
     def _debug(self):
         """

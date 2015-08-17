@@ -69,4 +69,11 @@ class Base(base.Base):
         self._parent.score.hitBy(enemy.enemy)
         enemy.kill()
 
+    def evadeEnemy(self, enemy):
+        """
+        Enemy got too distant, it can go away
+        """
+        self._parent.score.evade(enemy.enemy)
+        enemy.kill()
+
 

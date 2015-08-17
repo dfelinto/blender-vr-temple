@@ -55,6 +55,7 @@ class Base(base.Base):
         self._target = scene.active_camera
         logger = self.logger
         events = self.events
+        speed = self._parent.speed
 
         for obj in objects:
             enemy = obj.get('enemy')
@@ -63,13 +64,13 @@ class Base(base.Base):
                 continue
 
             if enemy == 'bat':
-                self._bats.append(Bat(scene, obj, self._target, events, logger))
+                self._bats.append(Bat(scene, obj, self._target, speed, events, logger))
 
             elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj, self._target, events, logger))
+                self._ghosts.append(Ghost(scene, obj, self._target, speed, events, logger))
 
             else: # 'pendulum'
-                self._pendulums.append(Pendulum(obj, events, logger))
+                self._pendulums.append(Pendulum(obj, speed, events, logger))
 
     def loop(self):
         ray_position = self._parent.io.head_position
@@ -90,6 +91,9 @@ class Base(base.Base):
         for ghost in self._ghosts:
             ghost.attack(ray_position)
 
+        for pendulum in self._pendulums:
+            pendulum.evade(ray_position)
+
 
 # ############################################################
 # Enemy Classes
@@ -99,16 +103,19 @@ class Enemy:
     ray_filter = ''
     instances = 0
     attack_distance_squared = 0.01
+    evade_distance_squared = 100.0
 
-    def __init__(self, events, logger):
+    def __init__(self, speed, events, logger):
         self._dupli_object = None
         self._sound = None
         self._active = False
+        self._speed = speed
         self._state_init = Enemy.getState(3)
         self._state_end = Enemy.getState(6)
         self._id = self.__class__.calculateId()
         self.logger = logger
         self.events = events
+        self.evade_distance_squared
 
     @staticmethod
     def getState(state):
@@ -219,6 +226,10 @@ class Enemy:
         if distance_squared < self.attack_distance_squared:
             self.events.hitByEnemy(self)
 
+        elif distance_squared > self.evade_distance_squared:
+            print(distance_squared, self.evade_distance_squared)
+            self.events.evadeEnemy(self)
+
     def _setDupliObject(self, obj):
         """
         Setup the duplicated object to integrate with our Python code
@@ -234,45 +245,60 @@ class Enemy:
         # replace the BGE object class with our own
         self._dupli_object = bge_wrappers[bge_class](obj, self)
 
+    def _setupLogicBricks(self):
+        sensors = self._dupli_object.sensors
 
-class Bat(Enemy):
+        near = sensors.get('Near')
+        near.distance *= self._speed
+
+        self.evade_distance_squared = pow(near.distance * 2.0, 2)
+
+
+class FlyingEnemy(Enemy):
+    def __init__(self, name, scene, obj, target, speed, events, logger):
+        super(FlyingEnemy, self).__init__(speed, events, logger)
+        self._target = target
+
+        self._setDupliObject(self.addObject(scene, name, obj))
+        self._setupLogicBricks()
+
+        # our own _setupLogicBricks()
+        actuators = self._dupli_object.actuators
+        sensors = self._dupli_object.sensors
+
+        brain = actuators.get('brain')
+        brain.target = target
+        brain.velocity *= speed
+        brain.turnspeed *= speed
+        brain.acceleration *= speed
+
+        hermes = sensors.get('hermes')
+        hermes.subject = self.subject
+
+
+class Bat(FlyingEnemy):
     enemy = 'BAT'
     ray_filter = 'bat'
 
-    def __init__(self, scene, obj, target, events, logger):
-        super(Bat, self).__init__(events, logger)
-
-        self._setDupliObject(self.addObject(scene, 'Bat', obj))
-
-        brain = self._dupli_object.actuators.get('brain')
-        brain.target = target
-
-        hermes = self._dupli_object.sensors.get('hermes')
-        hermes.subject = self.subject
+    def __init__(self, scene, obj, target, speed, events, logger):
+        super(Bat, self).__init__('Bat', scene, obj, target, speed, events, logger)
 
 
-class Ghost(Enemy):
+class Ghost(FlyingEnemy):
     enemy = 'GHOST'
     ray_filter = 'ghost'
     attack_distance_squared = 0.25
+    activation_distance = 30.0
 
-    def __init__(self, scene, obj, target, events, logger):
-        super(Ghost, self).__init__(events, logger)
-
-        self._setDupliObject(self.addObject(scene, 'Ghost', obj))
-
-        brain = self._dupli_object.actuators.get('brain')
-        brain.target = target
-
-        hermes = self._dupli_object.sensors.get('hermes')
-        hermes.subject = self.subject
+    def __init__(self, scene, obj, target, speed, events, logger):
+        super(Ghost, self).__init__('Ghost', scene, obj, target, speed, events, logger)
 
 
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
 
-    def __init__(self, obj, events, logger):
-        super(Pendulum, self).__init__(events, logger)
+    def __init__(self, obj, speed, events, logger):
+        super(Pendulum, self).__init__(speed, events, logger)
 
         group = obj.groupMembers
 
@@ -286,6 +312,8 @@ class Pendulum(Enemy):
         pendulum = group.get('Pendulum')
         self._setDupliObject(pendulum)
 
+        self._setupLogicBricks()
+
     def attack(self):
         """
         Called from Logic Brick callback
@@ -295,6 +323,19 @@ class Pendulum(Enemy):
             return
 
         self.events.hitByEnemy(self)
+
+    def evade(self, origin):
+        """
+        Check if enemy is too far
+        """
+        if not self._active:
+            return
+
+        obj = self._dupli_object
+        distance_squared = (obj.worldPosition - origin).length_squared
+
+        if distance_squared > self.evade_distance_squared:
+            self.events.evadeEnemy(self)
 
     def end(self):
         """
