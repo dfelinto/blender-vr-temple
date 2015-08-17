@@ -70,7 +70,7 @@ class Base(base.Base):
                 self._ghosts.append(Ghost(scene, obj, self._target, speed, events, logger))
 
             else: # 'pendulum'
-                self._pendulums.append(Pendulum(obj, speed, events, logger))
+                self._pendulums.append(Pendulum(scene, obj, speed, events, logger))
 
     def loop(self):
         ray_position = self._parent.io.head_position
@@ -303,10 +303,11 @@ class Pendulum(Enemy):
     enemy = 'PENDULUM'
     ray_filter = 'pendulum'
 
-    def __init__(self, obj, speed, events, logger):
+    def __init__(self, scene, obj, speed, events, logger):
         super(Pendulum, self).__init__(speed, events, logger)
 
-        self._setDupliObject(obj.groupMembers.get('Pendulum.Sphere'))
+        group = self.addObject(scene, 'Pendulum.Group', obj)
+        self._setDupliObject(group.groupMembers.get('Pendulum.Sphere'))
 
     def attack(self):
         """
