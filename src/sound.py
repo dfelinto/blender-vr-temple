@@ -138,7 +138,7 @@ class OSCSoundEngine(SoundEngine):
             osc_global.volume("%{0}".format(int(self._volume * 100)))
 
         except Exception as E:
-            print(E)
+            self.logger.error(E)
 
     def setUser(self, user):
         """

@@ -227,7 +227,6 @@ class Enemy:
             self.events.hitByEnemy(self)
 
         elif distance_squared > self.evade_distance_squared:
-            print(distance_squared, self.evade_distance_squared)
             self.events.evadeEnemy(self)
 
     def _setDupliObject(self, obj):
