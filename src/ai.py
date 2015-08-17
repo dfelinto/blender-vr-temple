@@ -245,9 +245,17 @@ class Enemy:
         # replace the BGE object class with our own
         self._dupli_object = bge_wrappers[bge_class](obj, self)
 
+        # setup the logic bricks
+        self._setupLogicBricks()
+
     def _setupLogicBricks(self):
         sensors = self._dupli_object.sensors
 
+        # messenger sensor used to end the object
+        hermes = sensors.get('hermes')
+        hermes.subject = self.subject
+
+        # near sensor used to detect the proximity with the player
         near = sensors.get('Near')
         near.distance *= self._speed
 
@@ -260,20 +268,17 @@ class FlyingEnemy(Enemy):
         self._target = target
 
         self._setDupliObject(self.addObject(scene, name, obj))
-        self._setupLogicBricks()
 
         # our own _setupLogicBricks()
         actuators = self._dupli_object.actuators
         sensors = self._dupli_object.sensors
 
+        # adjust the chase velocity based on the scene speed
         brain = actuators.get('brain')
         brain.target = target
         brain.velocity *= speed
         brain.turnspeed *= speed
         brain.acceleration *= speed
-
-        hermes = sensors.get('hermes')
-        hermes.subject = self.subject
 
 
 class Bat(FlyingEnemy):
@@ -296,23 +301,12 @@ class Ghost(FlyingEnemy):
 
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
+    ray_filter = 'pendulum'
 
     def __init__(self, obj, speed, events, logger):
         super(Pendulum, self).__init__(speed, events, logger)
 
-        group = obj.groupMembers
-
-        # we wrapp the sphere and the pendulum objects
-        # because the sphere is detected by the collision sensor
-        # while the pendulum handles all the messages
-
-        sphere = group.get('Pendulum.Sphere')
-        self._setDupliObject(sphere)
-
-        pendulum = group.get('Pendulum')
-        self._setDupliObject(pendulum)
-
-        self._setupLogicBricks()
+        self._setDupliObject(obj.groupMembers.get('Pendulum.Sphere'))
 
     def attack(self):
         """
