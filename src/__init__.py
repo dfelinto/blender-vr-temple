@@ -14,6 +14,7 @@ from . import (
         logger,
         score,
         sound,
+        timeline,
         debug,
         )
 
@@ -30,6 +31,7 @@ class Temple:
             "logger",
             "score",
             "sound",
+            "timeline",
             )
 
     def __init__(self):
@@ -48,6 +50,7 @@ class Temple:
         self.ai = ai.Base(self)
         self.score = score.Base(self)
         self.sound = sound.Base(self)
+        self.timeline = timeline.Base(self)
 
     @property
     def is_debug(self):
@@ -88,6 +91,7 @@ class Temple:
         self.ai.loop()
         self.score.loop()
         self.sound.loop()
+        self.timeline.loop()
 
 
 def main():

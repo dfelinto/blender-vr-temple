@@ -5,6 +5,10 @@ Scoring System
 Keep track of player's progress, score and final results
 """
 
+from bge import (
+        logic,
+        )
+
 from . import base
 
 TODO = True
@@ -23,6 +27,7 @@ class Base(base.Base):
             "_pendulums_hits",
             "_pendulums_total",
             "_pendulums_evade",
+            "_score_object",
             )
 
     def __init__(self, parent):
@@ -43,13 +48,27 @@ class Base(base.Base):
         self._pendulums_fails = 0
         self._pendulums_evade = 0
 
+        scene = logic.getCurrentScene()
+        self._score_object = scene.objects.get('Mine Kart.Text')
+
+        self._updateScore()
+
     def _updateScore(self):
-        TODO
-        print(
+        self.logger.debug(
                 self._bats_total, self._bats_hits, self._bats_fails, self._bats_evade,
                 self._ghosts_total, self._ghosts_hits, self._ghosts_fails, self._ghosts_evade,
                 self._pendulums_total, self._pendulums_hits, self._pendulums_fails, self._pendulums_evade,
                 )
+
+        self._score_object['Text'] = "" \
+                "Bats:      {1:02d} / {0:02d}\n" \
+                "Ghosts:    {5:02d} / {4:02d}\n" \
+                "Pendulums: {9:02d} / {8:02d}" \
+                "".format(
+                        self._bats_total, self._bats_hits, self._bats_fails, self._bats_evade,
+                        self._ghosts_total, self._ghosts_hits, self._ghosts_fails, self._ghosts_evade,
+                        self._pendulums_total, self._pendulums_hits, self._pendulums_fails, self._pendulums_evade,
+                        )
 
     def spawn(self, enemy):
         """
