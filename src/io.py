@@ -117,13 +117,9 @@ class Base(base.Base):
             return self._matrix
 
         if self._use_headtrack:
-            TODO
-            """
-            UNTESTED, 150% likely to be wrong, though the idea is that
-            """
-            self._matrix = self._headtrack_user.getPosition() * \
-                    self._headtrack_user.getVehiclePosition() * \
-                    self._camera.worldTransform
+            self._matrix = self._camera.worldTransform * \
+                    self._headtrack_user.getVehiclePosition().inverted() * \
+                    self._headtrack_user.getPosition().inverted()
         else:
             self._matrix = self._camera.worldTransform
 
