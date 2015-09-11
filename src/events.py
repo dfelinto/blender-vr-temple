@@ -11,6 +11,8 @@ from bge import (
 
 from . import base
 
+TODO = True
+
 class Base(base.Base):
     def __init__(self, parent):
         base.Base.__init__(self, parent)
@@ -76,4 +78,27 @@ class Base(base.Base):
         self._parent.score.evade(enemy.enemy)
         enemy.kill()
 
+    def startLap(self):
+        """
+        Start a new lap
+        """
+        self.logger.debug('New Lap')
 
+        self._parent.bumpSpeed()
+
+        TODO
+        """
+        populate enemies
+        """
+
+    def gameOver(self):
+        """
+        The game time is over
+        """
+        self.logger.debug('Game Over')
+
+        TODO
+        """
+        do something funky
+        """
+        logic.endGame()

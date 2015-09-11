@@ -18,8 +18,6 @@ from . import (
         debug,
         )
 
-TODO = True
-
 class Temple:
     __slots__ = (
             "_is_debug",
@@ -64,13 +62,7 @@ class Temple:
         """
         Increase global speed
         """
-        self._speed *= 1.5
-
-        TODO
-
-        """
-        change base speed of kart animation
-        """
+        self._speed *= 1.1
 
     def _debug(self):
         """

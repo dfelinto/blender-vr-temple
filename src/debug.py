@@ -43,6 +43,7 @@ class Base(base.Base):
         self._parent.io.loop()
         self._parent.ai.loop()
         self._parent.sound.loop()
+        self._parent.timeline.loop()
 
     def _keyboard(self):
 
