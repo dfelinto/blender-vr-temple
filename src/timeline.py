@@ -35,8 +35,8 @@ class Base(base.Base):
         self._updateTime()
 
     def _setupTime(self):
-        self._fps = 25.0
-        self._frames_lap = 1500 # roughly 1 minute (25 * 60)
+        self._fps = 25.0 * 10.0 * 0.25
+        self._frames_lap = 15000 # roughly 1 minute (25 * 60)
         self._frames_game = self._frames_lap * 5
         self._lap = 0
 
@@ -55,6 +55,9 @@ class Base(base.Base):
 
         proxy = scene.objects.get('Proxy')
         kart = scene.objects.get('Mine Kart')
+
+        kart.worldPosition = proxy.worldPosition
+        kart.worldOrientation = proxy.worldOrientation
 
         kart.setParent(proxy)
         self._animation_proxy = proxy
@@ -82,6 +85,6 @@ class Base(base.Base):
             self._parent.events.startLap()
 
         self._animation_proxy['frame'] = frame_lap
-        self.logger.debug(int(lap), int(frame_lap), int(frame_game))
+        # self.logger.debug(int(lap), int(frame_lap), int(frame_game))
 
 
