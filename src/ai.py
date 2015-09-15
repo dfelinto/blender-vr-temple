@@ -11,6 +11,8 @@ from bge import (
 
 import os
 
+TODO = True
+
 from . import base
 
 class Base(base.Base):
@@ -19,6 +21,7 @@ class Base(base.Base):
             "_ghosts",
             "_pendulums",
             "_target",
+            "_trail_seeker",
             )
 
     def __init__(self, parent):
@@ -28,7 +31,9 @@ class Base(base.Base):
         self._ghosts = []
         self._pendulums = []
 
+        self._trail_seeker = None
         self._initializeEnemies()
+        self._initializeTrailSeeker()
 
     @property
     def bats(self):
@@ -93,6 +98,145 @@ class Base(base.Base):
 
         for pendulum in self._pendulums:
             pendulum.evade(ray_position)
+
+    def spawnEnemies(self):
+        """
+        populate enemies
+        """
+        TODO
+
+        """
+        randomly get those numbers
+        dont forget to get the offset based on current frame
+        """
+
+        for frame in 10, 500, 1000:
+            self._trail_seeker.getPosition(
+                    frame,
+                    self._spawnEnemies,
+                    {'frame':frame},
+                    )
+
+        for frame in 20, 600, 1300:
+            self._trail_seeker.getOrientation(
+                    frame,
+                    self._spawnEnemies,
+                    {'frame':frame},
+                    )
+
+        for frame in 30, 680, 1400:
+            self._trail_seeker.getTransform(
+                    frame,
+                    self._spawnEnemies,
+                    {'frame':frame},
+                    )
+
+    def _spawnEnemies(self, value, user_data):
+        """
+        actually populate enemies
+        """
+        TODO
+
+        frame = user_data['frame']
+        print(frame, value)
+
+    def trailSeek(self):
+        """
+        see if we are to be activated
+        """
+        self._trail_seeker.loop()
+
+    def trailSeeker(self, ob, controller, actuator):
+        """
+        Store the object we use to evaluate
+        the trail for enemy spawning
+        """
+        self._trail_seeker = Seeker(ob, controller, actuator)
+
+    def _initializeTrailSeeker(self):
+        """
+        """
+        scene = logic.getCurrentScene()
+        objects = scene.objects
+
+        ob = objects.get('Seeker')
+        cont = ob.controllers.get('controller')
+        act = cont.actuators.get('actuator')
+
+        self.trailSeeker(ob, cont, act)
+
+
+class Seeker:
+    def __init__(self, ob, controller, actuator):
+        self._ob = ob
+        self._controller = controller
+        self._actuator = actuator
+        self._activate = False
+        self._stack = []
+
+    def _changeFrame(self, frame):
+        self._ob['frame'] = frame
+        self._controller.activate(self._actuator)
+
+    def _getPosition(self, frame):
+        self._changeFrame(frame)
+        return self._ob.worldPosition
+
+    def getPosition(self, frame, callback, user_data=None):
+        """
+        Get position of the animation at a given frame
+
+        :param frame: animation frame
+        :type frame: int
+        :param callback: callback function
+        :type callback: function(mathutils.Vector, user_data)
+        :param user_data: user data passed back to callback function
+        :type user_data: Object
+        """
+        self._stack.insert(0, (self._getPosition, frame, callback, user_data))
+
+    def _getOrientation(self, frame):
+        self._changeFrame(frame)
+        return self._ob.worldOrientation
+
+    def getOrientation(self, frame, callback, user_data=None):
+        """
+        Get orientation matrix of the animation at a given frame
+
+        :param frame: animation frame
+        :type frame: int
+        :param callback: callback function
+        :type callback: function(mathutils.Matrix, user_data)
+        :param user_data: user data passed back to callback function
+        :type user_data: Object
+        """
+        self._stack.insert(0, (self._getOrientation, frame, callback, user_data))
+
+    def _getTransform(self, frame):
+        self._changeFrame(frame)
+        return (self._ob.worldPosition, self._ob.worldOrientation)
+
+    def getTransform(self, frame, callback, user_data=None):
+        """
+        Get position and orientation matrix of the animation at a given frame
+
+        :param frame: animation frame
+        :type frame: int
+        :param callback: callback function
+        :type callback: function(((mathutils.Vector, mathutils.Matrix), user_data)
+        :param user_data: user data passed back to callback function
+        :type user_data: Object
+        """
+        self._stack.insert(0, (self._getTransform, frame, callback, user_data))
+
+    def loop(self):
+        """
+        activate the actuator to return any stacked query
+        """
+        if self._stack:
+            func, frame, callback, user_data = self._stack.pop()
+            value = func(frame)
+            callback(value, user_data)
 
 
 # ############################################################
@@ -383,5 +527,12 @@ def attacked(cont):
     sensor = cont.sensors[0]
     for obj in sensor.hitObjectList:
         obj.ai.attack()
+
+
+def trailSeeking(cont):
+    """
+    activate trail seeking actuator
+    """
+    logic.temple.ai.trailSeek()
 
 

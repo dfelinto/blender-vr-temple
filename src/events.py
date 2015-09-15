@@ -86,10 +86,7 @@ class Base(base.Base):
 
         self._parent.bumpSpeed()
 
-        TODO
-        """
-        populate enemies
-        """
+        self._parent.ai.spawnEnemies()
 
     def gameOver(self):
         """
