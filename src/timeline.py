@@ -34,6 +34,14 @@ class Base(base.Base):
     def loop(self):
         self._updateTime()
 
+    @property
+    def lap_frames(self):
+        return self._frames_lap
+
+    @property
+    def current_frame(self):
+        return self._animation_proxy['frame']
+
     def _setupTime(self):
         self._fps = 25.0 * 10.0 * 0.25
         self._frames_lap = 15000 # roughly 1 minute (25 * 60)

@@ -32,7 +32,7 @@ class Base(base.Base):
         self._pendulums = []
 
         self._trail_seeker = None
-        self._initializeEnemies()
+        self._target = logic.getCurrentScene().active_camera
         self._initializeTrailSeeker()
 
     @property
@@ -46,36 +46,6 @@ class Base(base.Base):
     @property
     def pendulums(self):
         return self._pendulums
-
-    def _initializeEnemies(self):
-        """
-        * bge.logic.addObject ...
-        store unique property in each to use the messenger system
-        populate the self._* lists
-        """
-        scene = logic.getCurrentScene()
-        objects = scene.objects
-
-        enemies = {'bat', 'ghost', 'pendulum'}
-        self._target = scene.active_camera
-        logger = self.logger
-        events = self.events
-        speed = self._parent.speed
-
-        for obj in objects:
-            enemy = obj.get('enemy')
-
-            if enemy not in enemies:
-                continue
-
-            if enemy == 'bat':
-                self._bats.append(Bat(scene, obj, self._target, speed, events, logger))
-
-            elif enemy == 'ghost':
-                self._ghosts.append(Ghost(scene, obj, self._target, speed, events, logger))
-
-            else: # 'pendulum'
-                self._pendulums.append(Pendulum(scene, obj, speed, events, logger))
 
     def loop(self):
         ray_position = self._parent.io.head_position
@@ -103,42 +73,86 @@ class Base(base.Base):
         """
         populate enemies
         """
-        TODO
+        import random
+
+        TODO # use seed
 
         """
         randomly get those numbers
         dont forget to get the offset based on current frame
         """
 
-        for frame in 10, 500, 1000:
-            self._trail_seeker.getPosition(
-                    frame,
-                    self._spawnEnemies,
-                    {'frame':frame},
-                    )
+        frame_range = self._parent.timeline.lap_frames
+        frame_current = self._parent.timeline.current_frame
 
-        for frame in 20, 600, 1300:
-            self._trail_seeker.getOrientation(
-                    frame,
-                    self._spawnEnemies,
-                    {'frame':frame},
-                    )
+        logger = self.logger
+        events = self.events
+        speed = self._parent.speed
+        target = self._target
 
-        for frame in 30, 680, 1400:
+        pendulums = 20 # TODO
+        user_data = {
+                'scene':scene,
+                'speed':speed,
+                'events':events,
+                'logger':logger,
+                'target':target,
+                'target_position':target.worldPosition,
+                }
+
+        for i in range(pendulums):
+            frame = frame_current + random.randint(1, frame_range)
+
             self._trail_seeker.getTransform(
                     frame,
-                    self._spawnEnemies,
-                    {'frame':frame},
+                    self._spawnPendulum,
+                    user_data,
                     )
 
-    def _spawnEnemies(self, value, user_data):
-        """
-        actually populate enemies
-        """
-        TODO
+        TODO # add bats
+        TODO # add ghosts
 
-        frame = user_data['frame']
-        print(frame, value)
+    def _spawnBat(self, value, user_data):
+        """
+        actually populate bats
+        """
+        self._ghosts.append(Ghost(
+            user_data['scene'],
+            user_data['target'],
+            user_data['target_position'],
+            user_data['speed'],
+            user_data['events'],
+            user_data['logger'],
+            value,
+            )
+
+    def _spawnGhost(self, value, user_data):
+        """
+        actually populate ghosts
+        """
+        self._ghosts.append(Ghost(
+            user_data['scene'],
+            user_data['target'],
+            user_data['target_position'],
+            user_data['speed'],
+            user_data['events'],
+            user_data['logger'],
+            value,
+            )
+
+    def _spawnPendulum(self, value, user_data):
+        """
+        actually populate pendulums
+        """
+        self._pendulums.append(Pendulum(
+            user_data['scene'],
+            user_data['speed'],
+            user_data['events'],
+            user_data['logger'],
+            user_data['frame'],
+            value[0],
+            value[1],
+            )
 
     def trailSeek(self):
         """
@@ -315,13 +329,16 @@ class Enemy:
         logic.sendMessage(self.subject)
         self.logger.debug('kill', self._dupli_object.name)
 
-    def addObject(self, scene, object_name, object_origin):
+    def addObject(self, scene, name, origin, orientation):
         """
         Spawn a new object in the game
 
-        :type object_origin: mathutils.Vector
+        :type origin: mathutils.Vector
+        :type orientation: 4x4 mathutils.Matrix
         """
-        return scene.addObject(object_name, object_origin)
+        ob = scene.addObject(name, origin)
+        ob.worldOrientation = orientation
+        return ob
 
     def setSound(self, sound):
         """
@@ -406,11 +423,13 @@ class Enemy:
 
 
 class FlyingEnemy(Enemy):
-    def __init__(self, name, scene, obj, target, speed, events, logger):
+    def __init__(self, name, scene, target, target_position, speed, events, logger, base_position):
         super(FlyingEnemy, self).__init__(speed, events, logger)
-        self._target = target
 
-        self._setDupliObject(self.addObject(scene, name, obj))
+        enemy_position = self._getPosition(base_position)
+        enemy_orientation = self._getOrientation(enemy_position, target_position)
+
+        self._setDupliObject(self.addObject(scene, name, enemy_position, enemy_orientation))
 
         # our own _setupLogicBricks()
         actuators = self._dupli_object.actuators
@@ -423,13 +442,31 @@ class FlyingEnemy(Enemy):
         brain.turnspeed *= speed
         brain.acceleration *= speed
 
+    def _getyPosition(self, base_position):
+        TODO # get a position in a radius, not straight on the rail
+        return base_position
+
+    def _getOrientation(self, enemy_position, target_position):
+        """
+        return the direction towards the camera
+
+        :param camera_position: position of camera
+        :type position: mathutils.Vector
+        :param enemy_position: position of enemy
+        :type enemy_position: mathutils.Vector
+        :rtype: 4x4 mathutils.Matrix
+        """
+        import mathutils
+        return mathutils.Matrix.Identity()
+        TODO # return the matrix from position - target_position
+
 
 class Bat(FlyingEnemy):
     enemy = 'BAT'
     ray_filter = 'bat'
 
-    def __init__(self, scene, obj, target, speed, events, logger):
-        super(Bat, self).__init__('Bat', scene, obj, target, speed, events, logger)
+    def __init__(self, scene, target, target_position, speed, events, logger, base_position):
+        super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, base_position)
 
 
 class Ghost(FlyingEnemy):
@@ -438,19 +475,26 @@ class Ghost(FlyingEnemy):
     attack_distance_squared = 0.25
     activation_distance = 30.0
 
-    def __init__(self, scene, obj, target, speed, events, logger):
-        super(Ghost, self).__init__('Ghost', scene, obj, target, speed, events, logger)
+    def __init__(self, scene, target, target_position, speed, events, logger, base_position):
+        super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, base_position)
 
 
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
     ray_filter = 'pendulum'
 
-    def __init__(self, scene, obj, speed, events, logger):
+    def __init__(self, scene, speed, events, logger, base_position, base_orientation):
         super(Pendulum, self).__init__(speed, events, logger)
 
-        group = self.addObject(scene, 'Pendulum.Group', obj)
+        enemy_orientation = self._getOrientation(base_orientation)
+
+        group = self.addObject(scene, 'Pendulum.Group', base_position, enemy_orientation)
         self._setDupliObject(group.groupMembers.get('Pendulum.Sphere'))
+
+    def _getOrientation(self, base_orientation):
+        TODO # get a 90 deg rotated orientation randomly CW or CCW
+        orientation = base_orientation
+        return orientation
 
     def attack(self):
         """
