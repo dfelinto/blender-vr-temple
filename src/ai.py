@@ -115,7 +115,6 @@ class Base(base.Base):
                 'callback':None,
                 }
 
-        pendulums = 20 # TODO
         user_data = {
                 'scene':scene,
                 'speed':speed,
@@ -127,7 +126,9 @@ class Base(base.Base):
                 'dummy':dummy,
                 }
 
+        """
         sound_data['callback'] = self._sound_classes['PENDULUM']
+        pendulums = 25 # TODO
         for i in range(pendulums):
             frame = frame_current + random.randint(1, frame_range)
 
@@ -136,9 +137,22 @@ class Base(base.Base):
                     self._spawnPendulum,
                     user_data,
                     )
+        """
 
         TODO # add bats
+
         TODO # add ghosts
+
+        sound_data['callback'] = self._sound_classes['GHOST']
+        ghosts = 25 # TODO
+        for i in range(ghosts):
+            frame = frame_current + random.randint(1, frame_range)
+
+            self._trail_seeker.getPosition(
+                    frame,
+                    self._spawnGhost,
+                    user_data,
+                    )
 
     def _spawnBat(self, value, user_data):
         """
@@ -368,7 +382,7 @@ class Enemy:
         Spawn a new object in the game
 
         :type position: mathutils.Vector
-        :type orientation: 4x4 mathutils.Matrix
+        :type orientation: 3x3 mathutils.Matrix
         """
         self._dummy.worldPosition = position
         self._dummy.worldOrientation = orientation
@@ -499,7 +513,7 @@ class FlyingEnemy(Enemy):
         :rtype: 4x4 mathutils.Matrix
         """
         import mathutils
-        return mathutils.Matrix.Identity()
+        return mathutils.Matrix.Identity(3)
         TODO # return the matrix from position - target_position
 
 
