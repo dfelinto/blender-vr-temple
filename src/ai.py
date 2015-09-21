@@ -20,6 +20,9 @@ class Base(base.Base):
             "_bats",
             "_ghosts",
             "_pendulums",
+            "_sound_engine",
+            "_sound_classes",
+            "_sound_force_fallback",
             "_target",
             "_trail_seeker",
             )
@@ -76,9 +79,17 @@ class Base(base.Base):
         for pendulum in self._pendulums:
             pendulum.evade(ray_position)
 
+    def setSound(self, engine, force_fallback, sound_classes):
+        """
+        Setup sound engine, called from sound.py
+        """
+        self._sound_engine = engine
+        self._sound_classes = sound_classes
+        self._sound_force_fallback = force_fallback
+
     def spawnEnemies(self):
         """
-        populate enemies
+        Populate enemies
         """
         import random
 
@@ -98,6 +109,11 @@ class Base(base.Base):
         speed = self._parent.speed
         target = self._target
         dummy = self._dummy
+        sound_data = {
+                'engine':self._sound_engine,
+                'force_fallback':self._sound_force_fallback,
+                'callback':None,
+                }
 
         pendulums = 20 # TODO
         user_data = {
@@ -105,11 +121,13 @@ class Base(base.Base):
                 'speed':speed,
                 'events':events,
                 'logger':logger,
+                'sound_data':sound_data,
                 'target':target,
                 'target_position':target.worldPosition,
                 'dummy':dummy,
                 }
 
+        sound_data['callback'] = self._sound_classes['PENDULUM']
         for i in range(pendulums):
             frame = frame_current + random.randint(1, frame_range)
 
@@ -133,6 +151,7 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
+            user_data['sound_data'],
             user_data['dummy'],
             value,
             ))
@@ -148,6 +167,7 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
+            user_data['sound_data'],
             user_data['dummy'],
             value,
             ))
@@ -161,6 +181,7 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
+            user_data['sound_data'],
             user_data['dummy'],
             value[0],
             value[1],
@@ -354,11 +375,15 @@ class Enemy:
 
         return scene.addObject(name, self._dummy)
 
-    def setSound(self, sound):
+    def _setSound(self, sound_data):
         """
-        Setup OSC sound engine, called from sound.py
+        Setup sound sub-class
         """
-        self._sound = sound
+        engine = sound_data['engine']
+        force_fallback = sound_data['force_fallback']
+        callback = sound_data['callback']
+
+        self._sound = callback(engine, self.sound_source, force_fallback=force_fallback)
 
     def init(self):
         """
@@ -437,7 +462,7 @@ class Enemy:
 
 
 class FlyingEnemy(Enemy):
-    def __init__(self, name, scene, target, target_position, speed, events, logger, dummy, base_position):
+    def __init__(self, name, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
         super(FlyingEnemy, self).__init__(speed, events, logger, dummy)
 
         enemy_position = self._getPosition(base_position)
@@ -455,6 +480,9 @@ class FlyingEnemy(Enemy):
         brain.velocity *= speed
         brain.turnspeed *= speed
         brain.acceleration *= speed
+
+        # setup sound class
+        self._setSound(sound_data)
 
     def _getPosition(self, base_position):
         TODO # get a position in a radius, not straight on the rail
@@ -479,8 +507,8 @@ class Bat(FlyingEnemy):
     enemy = 'BAT'
     ray_filter = 'bat'
 
-    def __init__(self, scene, target, target_position, speed, events, logger, dummy, base_position):
-        super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, dummy, base_position)
+    def __init__(self, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
+        super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, sound_data, dummy, base_position)
 
 
 class Ghost(FlyingEnemy):
@@ -489,15 +517,15 @@ class Ghost(FlyingEnemy):
     attack_distance_squared = 0.25
     activation_distance = 30.0
 
-    def __init__(self, scene, target, target_position, speed, events, logger, dummy, base_position):
-        super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, dummy, base_position)
+    def __init__(self, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
+        super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, sound_data, dummy, base_position)
 
 
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
     ray_filter = 'pendulum'
 
-    def __init__(self, scene, speed, events, logger, dummy, base_position, base_orientation):
+    def __init__(self, scene, speed, events, logger, sound_data, dummy, base_position, base_orientation):
         super(Pendulum, self).__init__(speed, events, logger, dummy)
 
         enemy_position = self._getPosition(base_position)
@@ -505,6 +533,9 @@ class Pendulum(Enemy):
 
         group = self.addObject(scene, 'Pendulum.Group', enemy_position, enemy_orientation)
         self._setDupliObject(group.groupMembers.get('Pendulum.Sphere'))
+
+        # setup sound class
+        self._setSound(sound_data)
 
     def _getPosition(self, base_position):
         import mathutils

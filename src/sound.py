@@ -22,8 +22,6 @@ class Base(base.Base):
         self._setupEnemies()
 
     def _setupSoundEngine(self):
-        """
-        """
         is_debug = self._parent.is_debug
         osc = not is_debug and \
               logic.BlenderVR.getPlugin('osc') if hasattr(logic, 'BlenderVR') else None
@@ -34,18 +32,15 @@ class Base(base.Base):
             self._engine = AudaspaceSoundEngine(self.logger)
 
     def _setupEnemies(self):
-        """
-        """
-        is_debug = self._parent.is_debug
+        force_fallback = self._parent.is_debug
 
-        for bat in self._parent.ai.bats:
-            bat.setSound(Bat(self._engine, bat.sound_source, force_fallback=is_debug))
-
-        for ghost in self._parent.ai.ghosts:
-            ghost.setSound(Ghost(self._engine, ghost.sound_source, force_fallback=is_debug))
-
-        for pendulum in self._parent.ai.pendulums:
-            pendulum.setSound(Pendulum(self._engine, pendulum.sound_source, force_fallback=is_debug))
+        self._parent.ai.setSound(
+                self._engine,
+                force_fallback,
+                {'BAT':Bat,
+                 'GHOST':Ghost,
+                 'PENDULUM':Pendulum,
+                })
 
     def setVolumeLow(self):
         """
