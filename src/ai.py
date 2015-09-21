@@ -474,6 +474,15 @@ class Enemy:
 
         self.evade_distance_squared = pow(near.distance * 2.0, 2)
 
+    def _getZed(self):
+        import random
+
+        factor = random.random()
+        zed_range = self.zed[1] - self.zed[0]
+        zed = self.zed[0] + zed_range * factor
+
+        return zed
+
 
 class FlyingEnemy(Enemy):
     def __init__(self, name, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
@@ -499,8 +508,9 @@ class FlyingEnemy(Enemy):
         self._setSound(sound_data)
 
     def _getPosition(self, base_position):
+        import mathutils
+        return mathutils.Vector((base_position[0], base_position[1], self._getZed()))
         TODO # get a position in a radius, not straight on the rail
-        return base_position
 
     def _getOrientation(self, enemy_position, target_position):
         """
@@ -520,6 +530,7 @@ class FlyingEnemy(Enemy):
 class Bat(FlyingEnemy):
     enemy = 'BAT'
     ray_filter = 'bat'
+    zed = (3.3, 5.6)
 
     def __init__(self, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
         super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, sound_data, dummy, base_position)
@@ -530,6 +541,7 @@ class Ghost(FlyingEnemy):
     ray_filter = 'ghost'
     attack_distance_squared = 0.25
     activation_distance = 30.0
+    zed = (4.5, 4.5)
 
     def __init__(self, scene, target, target_position, speed, events, logger, sound_data, dummy, base_position):
         super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, sound_data, dummy, base_position)
@@ -538,6 +550,7 @@ class Ghost(FlyingEnemy):
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
     ray_filter = 'pendulum'
+    zed = (9.45, 9.45)
 
     def __init__(self, scene, speed, events, logger, sound_data, dummy, base_position, base_orientation):
         super(Pendulum, self).__init__(speed, events, logger, dummy)
@@ -553,7 +566,7 @@ class Pendulum(Enemy):
 
     def _getPosition(self, base_position):
         import mathutils
-        return mathutils.Vector((base_position[0], base_position[1], 9.45))
+        return mathutils.Vector((base_position[0], base_position[1], self._getZed()))
 
     def _getOrientation(self, base_orientation):
         import random
