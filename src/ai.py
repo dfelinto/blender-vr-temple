@@ -141,8 +141,20 @@ class Base(base.Base):
 
         TODO # add bats
 
+        sound_data['callback'] = self._sound_classes['BAT']
+        bats = 25 # TODO
+        for i in range(bats):
+            frame = frame_current + random.randint(1, frame_range)
+
+            self._trail_seeker.getPosition(
+                    frame,
+                    self._spawnBat,
+                    user_data,
+                    )
+
         TODO # add ghosts
 
+        """
         sound_data['callback'] = self._sound_classes['GHOST']
         ghosts = 25 # TODO
         for i in range(ghosts):
@@ -153,12 +165,13 @@ class Base(base.Base):
                     self._spawnGhost,
                     user_data,
                     )
+        """
 
     def _spawnBat(self, value, user_data):
         """
         actually populate bats
         """
-        self._ghosts.append(Ghost(
+        self._ghosts.append(Bat(
             user_data['scene'],
             user_data['target'],
             user_data['target_position'],
