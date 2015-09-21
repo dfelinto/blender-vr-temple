@@ -52,7 +52,6 @@ class Base(base.Base):
         self._initial_frame = self._getInitialFrame()
 
         self._updateTime()
-        self._parent.events.startLap()
 
     def _setupMineKart(self):
         """

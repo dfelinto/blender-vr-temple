@@ -50,6 +50,9 @@ class Temple:
         self.sound = sound.Base(self)
         self.timeline = timeline.Base(self)
 
+        # start the game
+        self.events.startLap()
+
     @property
     def is_debug(self):
         return self._is_debug

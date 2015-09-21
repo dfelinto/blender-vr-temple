@@ -32,8 +32,15 @@ class Base(base.Base):
         self._pendulums = []
 
         self._trail_seeker = None
-        self._target = logic.getCurrentScene().active_camera
+        self._initializeObjects()
         self._initializeTrailSeeker()
+
+    def _initializeObjects(self):
+        scene = logic.getCurrentScene()
+        objects = scene.objects
+
+        self._target = scene.active_camera
+        self._dummy = objects.get('Scripts')
 
     @property
     def bats(self):
@@ -85,10 +92,12 @@ class Base(base.Base):
         frame_range = self._parent.timeline.lap_frames
         frame_current = self._parent.timeline.current_frame
 
+        scene = logic.getCurrentScene()
         logger = self.logger
         events = self.events
         speed = self._parent.speed
         target = self._target
+        dummy = self._dummy
 
         pendulums = 20 # TODO
         user_data = {
@@ -98,6 +107,7 @@ class Base(base.Base):
                 'logger':logger,
                 'target':target,
                 'target_position':target.worldPosition,
+                'dummy':dummy,
                 }
 
         for i in range(pendulums):
@@ -123,8 +133,9 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
+            user_data['dummy'],
             value,
-            )
+            ))
 
     def _spawnGhost(self, value, user_data):
         """
@@ -137,8 +148,9 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
+            user_data['dummy'],
             value,
-            )
+            ))
 
     def _spawnPendulum(self, value, user_data):
         """
@@ -149,10 +161,10 @@ class Base(base.Base):
             user_data['speed'],
             user_data['events'],
             user_data['logger'],
-            user_data['frame'],
+            user_data['dummy'],
             value[0],
             value[1],
-            )
+            ))
 
     def trailSeek(self):
         """
@@ -263,7 +275,8 @@ class Enemy:
     attack_distance_squared = 0.01
     evade_distance_squared = 100.0
 
-    def __init__(self, speed, events, logger):
+    def __init__(self, speed, events, logger, dummy):
+        self._dummy = dummy
         self._dupli_object = None
         self._sound = None
         self._active = False
@@ -329,16 +342,17 @@ class Enemy:
         logic.sendMessage(self.subject)
         self.logger.debug('kill', self._dupli_object.name)
 
-    def addObject(self, scene, name, origin, orientation):
+    def addObject(self, scene, name, position, orientation):
         """
         Spawn a new object in the game
 
-        :type origin: mathutils.Vector
+        :type position: mathutils.Vector
         :type orientation: 4x4 mathutils.Matrix
         """
-        ob = scene.addObject(name, origin)
-        ob.worldOrientation = orientation
-        return ob
+        self._dummy.worldPosition = position
+        self._dummy.worldOrientation = orientation
+
+        return scene.addObject(name, self._dummy)
 
     def setSound(self, sound):
         """
@@ -423,8 +437,8 @@ class Enemy:
 
 
 class FlyingEnemy(Enemy):
-    def __init__(self, name, scene, target, target_position, speed, events, logger, base_position):
-        super(FlyingEnemy, self).__init__(speed, events, logger)
+    def __init__(self, name, scene, target, target_position, speed, events, logger, dummy, base_position):
+        super(FlyingEnemy, self).__init__(speed, events, logger, dummy)
 
         enemy_position = self._getPosition(base_position)
         enemy_orientation = self._getOrientation(enemy_position, target_position)
@@ -442,7 +456,7 @@ class FlyingEnemy(Enemy):
         brain.turnspeed *= speed
         brain.acceleration *= speed
 
-    def _getyPosition(self, base_position):
+    def _getPosition(self, base_position):
         TODO # get a position in a radius, not straight on the rail
         return base_position
 
@@ -465,8 +479,8 @@ class Bat(FlyingEnemy):
     enemy = 'BAT'
     ray_filter = 'bat'
 
-    def __init__(self, scene, target, target_position, speed, events, logger, base_position):
-        super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, base_position)
+    def __init__(self, scene, target, target_position, speed, events, logger, dummy, base_position):
+        super(Bat, self).__init__('Bat', scene, target, target_position, speed, events, logger, dummy, base_position)
 
 
 class Ghost(FlyingEnemy):
@@ -475,25 +489,36 @@ class Ghost(FlyingEnemy):
     attack_distance_squared = 0.25
     activation_distance = 30.0
 
-    def __init__(self, scene, target, target_position, speed, events, logger, base_position):
-        super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, base_position)
+    def __init__(self, scene, target, target_position, speed, events, logger, dummy, base_position):
+        super(Ghost, self).__init__('Ghost', scene, target, target_position, speed, events, logger, dummy, base_position)
 
 
 class Pendulum(Enemy):
     enemy = 'PENDULUM'
     ray_filter = 'pendulum'
 
-    def __init__(self, scene, speed, events, logger, base_position, base_orientation):
-        super(Pendulum, self).__init__(speed, events, logger)
+    def __init__(self, scene, speed, events, logger, dummy, base_position, base_orientation):
+        super(Pendulum, self).__init__(speed, events, logger, dummy)
 
+        enemy_position = self._getPosition(base_position)
         enemy_orientation = self._getOrientation(base_orientation)
 
-        group = self.addObject(scene, 'Pendulum.Group', base_position, enemy_orientation)
+        group = self.addObject(scene, 'Pendulum.Group', enemy_position, enemy_orientation)
         self._setDupliObject(group.groupMembers.get('Pendulum.Sphere'))
 
+    def _getPosition(self, base_position):
+        import mathutils
+        return mathutils.Vector((base_position[0], base_position[1], 9.45))
+
     def _getOrientation(self, base_orientation):
-        TODO # get a 90 deg rotated orientation randomly CW or CCW
-        orientation = base_orientation
+        import random
+
+        if random.getrandbits(1):
+            orientation = base_orientation
+        else:
+            import mathutils
+            import math
+            orientation = mathutils.Matrix.Rotation(math.pi, 3, 'Z') * base_orientation
         return orientation
 
     def attack(self):
